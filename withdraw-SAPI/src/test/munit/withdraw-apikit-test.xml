@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd ">
+    <munit:config name="withdraw-apikit-test.xml" />
+    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+        <http:request-connection host="localhost" port="8081" />
+    </http:request-config>
+    <munit:test name="post:\withDraw:application\json:withdraw-config-201-application\json-FlowTest" description="Verifying functionality of [post:\withDraw:application\json:withdraw-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="withdraw-main" />
+            <munit:enable-flow-source value="post:\withDraw:application\json:withdraw-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_withdraw_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="POST" path="/withDraw">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "amountToBeWithdraw": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="6e6e2fe0-0982-47a5-9fdb-d50e3c135e09" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    <munit:test name="get:\accountDetails:withdraw-config-200-application\json-FlowTest" description="Verifying functionality of [get:\accountDetails:withdraw-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="withdraw-main" />
+            <munit:enable-flow-source value="get:\accountDetails:withdraw-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="0716f15a-2a07-462f-a858-7673c4eb9fa6" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="241865ac-ecd3-4bde-a015-5b41e6048a04" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[{&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "active",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 6000.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;&#10;]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="GET" path="/accountDetails">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "amountToBeWithdraw": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+{"bank": "ICICI", "type": "savings"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7a3d30f3-9aa1-476b-b120-b14d2b04d546" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="get:\accountDetails-Error:withdraw-config-200-application\json-FlowTest" description="Verifying functionality of [get:\accountDetails:withdraw-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="withdraw-main" />
+            <munit:enable-flow-source value="get:\accountDetails:withdraw-config" />
+        </munit:enable-flow-sources>
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Copy_of_Mock when" doc:id="ae6dd3c5-d37d-4713-b28f-e768370c936d" processor="db:select" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="241865ac-ecd3-4bde-a015-5b41e6048a04" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="9bf93f3d-4e9e-423a-b355-2f83a0780f39" >
+				<http:request config-ref="HTTP_Request_Configuration" method="GET" path="/accountDetails">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "amountToBeWithdraw": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+{"bank": "ICICI", "type": "savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d124771a-dcba-464a-afd6-3a57bc08a436" >
+						<logger level="INFO" doc:name="Logger" doc:id="de02eee7-4a7e-42ff-bc5a-173b88d93c3e" message="#[payload]"/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="30f9be28-e3b0-4df2-9605-27a57e4b93b8" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="patch:\withDraw-Error:application\json:withdraw-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\withDraw:application\json:withdraw-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="withdraw-main" />
+            <munit:enable-flow-source value="patch:\withDraw:application\json:withdraw-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_withdraw_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="858b17b9-27cb-4df1-a5cf-074fb9217233" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5bc045af-5a7a-4d8b-b4cc-7642140b9d13" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="6dfa21bc-0c39-4320-ad74-b7705976ec09" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/withDraw">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "amountToBeWithdraw": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+				<http:query-params><![CDATA[#[output application/json
+---
+{"bank": "ICICI", "type": "savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f2fe7209-d2b1-4b1c-abaa-ce0cf50a0137" >
+						<logger level="INFO" doc:name="Logger" doc:id="afe27466-882c-4947-90e6-4befd3a3f5a8" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="6c5201cd-4463-443d-820f-0737b4bb923c" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="patch:\withDraw-:application\json:withdraw-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\withDraw:application\json:withdraw-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="withdraw-main" />
+            <munit:enable-flow-source value="patch:\withDraw:application\json:withdraw-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_withdraw_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="cc319276-4fef-4662-b1c6-b7de93b6faf7" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5bc045af-5a7a-4d8b-b4cc-7642140b9d13" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message":"updated successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+		<munit:execution>
+			<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/withDraw">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "amountToBeWithdraw": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+				<http:query-params><![CDATA[#[output application/json
+---
+{"bank": "ICICI", "type": "savings"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="ef62c022-63e9-425d-8257-5bbd46705a5e" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    <munit:test name="patch:\withDraw-BadRequest-Error:application\json:withdraw-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\withDraw:application\json:withdraw-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="withdraw-main" />
+            <munit:enable-flow-source value="patch:\withDraw:application\json:withdraw-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_withdraw_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="1e8bfb9d-4c7a-4322-8e68-f442bdfbdd18" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/withDraw">
+                <http:body><![CDATA[#[{
+      
+       "atmPin": "4488",
+       "amountToBeWithdraw": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+				<http:query-params><![CDATA[#[output application/json
+---
+{"bank": "", "type": "savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2cd4cbe9-0c1f-4522-baee-53830404048a" >
+						<logger level="INFO" doc:name="Logger" doc:id="59bb414e-b189-40e9-9ad7-ada4c1c0b07f" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="72b50b2c-8e1b-4765-ba33-b448086ec2d3" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    
+    <munit:test name="patch:\withDraw-ReourcesNotFound-Error:application\json:withdraw-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\withDraw:application\json:withdraw-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="withdraw-main" />
+            <munit:enable-flow-source value="patch:\withDraw:application\json:withdraw-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_withdraw_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="417d978c-eb46-421f-9b2c-b35774af1643" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/withDrawal">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "amountToBeWithdraw": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+				<http:query-params><![CDATA[#[output application/json
+---
+{"bank": "ICICI", "type": "savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3cf733d4-0c99-497c-b7f3-f6f7b6baa828" >
+						<logger level="INFO" doc:name="Logger" doc:id="dd23a003-1c33-4724-9737-d75aa070f67a" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="59791dbe-f7de-4c5f-9ee2-9579da73c27a" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    
+    <munit:test name="patch:\withDraw-MethodNotAllowed-Error:application\json:withdraw-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\withDraw:application\json:withdraw-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="withdraw-main" />
+            <munit:enable-flow-source value="patch:\withDraw:application\json:withdraw-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_withdraw_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="2936fe07-a3df-42e5-9ee3-02c07d65daad" >
+				<http:request config-ref="HTTP_Request_Configuration" method="DELETE" path="/withDraw">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "amountToBeWithdraw": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+				<http:query-params><![CDATA[#[output application/json
+---
+{"bank": "ICICI", "type": "savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b2e2926e-0ba9-42cd-87ec-6f28fd8dfcd1" >
+						<logger level="INFO" doc:name="Logger" doc:id="23b36a7e-30ad-48bf-b927-7f38e39ff2b8" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="2a0be96e-aa26-4dce-a5df-3beaafdd42b7" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="withdraw-UNSUPPORTED_MEDIA_TYPE-apikit-testTest1" doc:id="d3830241-c095-412f-9a0e-baeb845d6c55" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5799c600-6a0f-4508-b0bb-b2d2fb1b829f" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="withdraw-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:UNSUPPORTED_MEDIA_TYPE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="99f1324e-eb81-4e84-93f5-22501385bff3" >
+				<flow-ref doc:name="Flow Reference" doc:id="396b5f64-8328-486b-8f81-9dc741e5b28e" name="withdraw-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="53a74049-93cc-43ba-8b8d-eb1fee8d8013" >
+						<logger level="INFO" doc:name="Logger" doc:id="7ecfa869-c4b9-4bf5-8eff-4f1c4a118ebf" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="5bd2ce1c-1632-4519-88da-0b6c4969771f" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="withdraw-NOT_ACCEPTABLE-apikit-testTest" doc:id="e6c4c2d5-fc88-4a2c-a1f6-6ffabf8b4bf9" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="22ab6d91-6088-46da-8873-e16936717524" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="withdraw-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="3b2a8312-542c-404f-959f-a435cdf84741" >
+				<flow-ref doc:name="Flow Reference" doc:id="a72dfa37-803d-457f-8621-437bb495e6e1" name="withdraw-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="074be2b0-fa95-49bf-9c87-4d03ec97e03d" >
+						<logger level="INFO" doc:name="Logger" doc:id="a2cfb85c-276c-47af-b62a-a53897abf865" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="4c522d85-7585-4fe4-9707-908fe9881d93" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="withdraw-APIKIT:NOT_IMPLEMENTED-apikit-testTest" doc:id="29689d7e-27fa-46c9-843a-428d344e5f6f" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f271a080-dc4d-4343-88ef-e5b6a18ee215" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="withdraw-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="93babad0-05f0-4b11-a0c7-9f94bf2dde16" >
+				<flow-ref doc:name="Flow Reference" doc:id="15d21c4f-675a-4860-9fa1-492e3f1feae3" name="withdraw-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0dc5c817-f3c1-4b34-a406-e55788ec3ad7" >
+						<logger level="INFO" doc:name="Logger" doc:id="fab62b7d-c05f-401f-a652-df8b0a5c728a" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="f7d44275-0005-48de-bf5f-f7a92a9a973b" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="withdraw-ConsoleNOT_FOUND-apikit-testTest" doc:id="4df9fad2-9367-437a-b7fe-1b7d313fa6d5" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="30423ebd-725c-45f6-b05b-4071ae520dfa" processor="apikit:console">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="withdraw-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="0343b12b-2dc9-4219-a642-6f185cb08b52" >
+				<flow-ref doc:name="Flow Reference" doc:id="2cd019f0-3345-4415-a996-5aa2245144a8" name="withdraw-console"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="931a925d-7d68-46c4-89a3-1c184d68ae79" >
+						<logger level="INFO" doc:name="Logger" doc:id="770aa031-f4fa-463d-8c36-5988838cbfe7" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="174a133c-be92-4dca-860b-0c2f354b3014" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+    
+        
+</mule>

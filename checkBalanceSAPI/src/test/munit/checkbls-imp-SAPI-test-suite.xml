@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<munit:config name="checkbls-imp-SAPI-test-suite.xml" />
+	
+	<munit:test name="checkbls-imp-SAPI-test-suite-FetchingDetails-impFlowTest" doc:id="a83bc517-1d40-43b6-b646-9e254531d482" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="2f418128-1a13-4571-b943-72839c6a29b8" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d450f277-ec59-4c32-8f41-47e56d4d2a5d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[{&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "active",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 6000.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;]&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:name="Set Event" doc:id="a5eddf69-6df3-4e68-8afc-87018613d93b" >
+				<munit:payload value='#[{&#10;       "accountNum": "0123456789",&#10;       "atmPin": "4488"&#10;}]' />
+				<munit:attributes value='#[{queryParams:{"bank":"ICICI","type":"savings"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow Reference" doc:id="6e3d1e05-3a44-49a6-abd7-95314768177f" name="FetchingDetails-impFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="a4d57cf2-4e63-4d87-a687-3c598ab1ee9f" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="checkbls-imp-SAPI-test-suite-wrongpinUpdateSys-impFlowTest" doc:id="e9ea5fbf-116e-4b81-9724-392a9e6ef4c2" description="Test">
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="d768ba4d-2beb-4078-bea8-2987b17cd80f" >
+				<munit:payload value='#[{"custAccNum" : "0123456789",&#10;	"AccountStatus": "active",&#10;	"wrongPin": 0&#10;	&#10;}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to wrongpinUpdateSys-impFlow" doc:id="04be5f78-f4ef-4426-9432-a42846d56084" name="wrongpinUpdateSys-impFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7166ae75-0d9b-4527-b851-e1d106dc94eb" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	
+	
+	<munit:test name="updateError-imp-SAPI-test-suite-wrongpinUpdateSys-impFlowTest" doc:id="571f0840-099a-4863-a1ab-ab5517d9615b" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="29599ad0-5ed5-4b1f-a633-64cfcbdaaa2f" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="c6a66283-6dfe-449a-a40b-f38be3d55200" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="40bf594c-389e-4c4a-8f17-278b09ae6945" >
+				<munit:payload value='#[{"custAccNum" : "0123456789",
+&#10;	"AccountStatus": "active",
+&#10;	"wrongPin": 0
+&#10;	
+&#10;}]' />
+			</munit:set-event>
+			<munit:set-event doc:name="Set Event" doc:id="5384598d-0d5e-4e45-985b-f64c7c3cae93">
+				<munit:payload value='#[{"custAccNum" : "0123456789",
+&#10;	"AccountStatus": "active",
+&#10;	"wrongPin": 0
+&#10;	
+&#10;}]' />
+			</munit:set-event>
+			<try doc:name="Try" doc:id="2b7c9227-7545-41ce-aa13-100667bac947" >
+				<flow-ref doc:name="Flow-ref to wrongpinUpdateSys-impFlow" doc:id="c3d2dbb9-4f99-44e9-8f7a-5da1ef078fed" name="wrongpinUpdateSys-impFlow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6230d95c-f546-4c9e-a46d-209bf27cbc91" >
+						<logger level="INFO" doc:name="Logger" doc:id="a420a55b-de6a-427b-b75e-52fdaed6f3a9" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		
+</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7e35c8e1-cd4a-409e-82b0-bd7c6ebb4639" expression="#[payload.error]" is='#[MunitTools::equalTo( "DATABASE ERROR")]'/>
+		</munit:validation>
+	</munit:test>
+
+<munit:test name="checkBlsError-imp-SAPI-test-suite-wrongpinUpdateSys-impFlowTest" doc:id="ad095b00-e57c-4471-aaa2-ff21158db5d5" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="419ae1b6-21ac-4d8c-bd10-9f4847d13b1c" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d450f277-ec59-4c32-8f41-47e56d4d2a5d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<try doc:name="Try" doc:id="dbb67797-818c-44ef-8b4b-081c94416509" >
+				<flow-ref doc:name="FetchingDetails-impFlow" doc:id="12dc1958-3ed7-481a-8d6b-db64e537ee2f" name="FetchingDetails-impFlow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0ef16a4d-e894-4e53-851a-ed85bb801887" >
+						<logger level="INFO" doc:name="Logger" doc:id="df295122-bd28-4383-a264-4982b85b03ac" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		
+</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="47ee23fd-082b-4cc5-8c5a-f5d8abe70505" expression="#[payload.error]" is='#[MunitTools::equalTo( "DATABASE ERROR")]'/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="655ed9b8-e065-479c-b5e8-1601d40f1aea" >
+		<email:smtp-connection host="smtp.gmail.com" user="asamohanramsai@gmail.com" password="Ram@1234" port="587" connectionTimeout="50" readTimeout="50">
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="True"/>
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="77d63ab2-67b8-47a9-99f6-6849d2070a96" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<flow name="deposit-ImpleFlow" doc:id="29cf484d-4b6d-4e58-a493-0402a200b827" >
+		<set-variable value="#[output application/json&#10;---&#10;&#10;payload]" doc:name="Copy_of_Set Variable" doc:id="155eb2ea-11a7-4189-b166-44eea5b16978" variableName="a" />
+		<http:request method="GET" doc:name="Request" doc:id="b7ada05c-9559-4362-a6e3-c0191dd1a919" path="/api/accountDetails" config-ref="HTTP_Request_configuration">
+			<http:query-params ><![CDATA[#[{
+	"accountNum": payload.accountNum
+	
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Copy_of_Transform Message" doc:id="96e86a93-df97-43b5-9d12-83fedf4fffe2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var a = vars.a
+---
+ (if (payload != null )
+{
+                        (if (payload.accountStatus == "active")
+                        {
+                                (if (payload.wrongPin <= 2)
+                                {
+                                    (if (payload.atmPin == a.atmPin)         
+                                        {
+                                       (if (a.depositMoney != null)
+                                       	{                                       	  
+                                       	  	"accountNum": payload.custAccNum,
+                                       	  	"totalBalance": payload.totalBalance + a.depositMoney,
+                                       	  	"hint": "depositMoney",
+                                       	  	"deposit": a.depositMoney
+                                       	  	
+                                       	  	}
+                                       	  	else {
+                                       	  		"error": " Please enter deposit amount ",
+                                       	  		
+                                       	  		"hint": "depositError"                                     	  	
+                                       	  	      })
+                                       	  	
+                                       	  	}
+                                       
+                                        
+                                
+                                        else 
+                                        {"error": "Invalid Pin, try with correct pin",
+                                        "wrongPin" : payload.wrongPin + 1,
+                                        "message" : "Login Attempt Failed .Attempts left 2" ,
+                                        "custAccNum" : payload.custAccNum,
+                                        "accountStatus": payload.accountStatus,
+                                        "totalBalance": payload.totalBalance,
+                                        "hint": "InvalidPin"
+                                        })
+                                }              
+                                else
+                                {"error": "retry EXausted",
+                                    "message": "Maximum Attempts reached .Your Account "
+                                    ++ payload.custAccNum   ++ "is temporarily blocked",
+                                    "accountStatus": "InActive",
+                                    "wrongPin": payload.wrongPin,
+                                     "custAccNum" : payload.custAccNum,
+                                        "totalBalance": payload.totalBalance
+                              
+                                })
+
+
+                        } 
+                       else 
+                       {
+                           "errorMsgAccountStatus" : "Account  " ++ payload.custAccNum ++ "  temporarily blocked. Please visit 
+                                nearest Branch" , 
+                            "hint" : "errorResponse"
+                        })
+}
+else
+{ 
+    "errorMsgAccountStatus" : "Account does not exist .. Please Enter Valid Account Number",
+    
+"hint" : "errorResponse"
+})            ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Copy_of_Flow Reference" doc:id="0d0ddfed-8e11-486f-a25f-184f1b998c7d" name="depositPAPI-Imp-prcsFlow" />
+		<ee:transform doc:name="Copy_of_Transform Message" doc:id="a12bf1a4-a16b-4c39-be8f-0ef103411f66" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+ payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="Global-Error-HandlerError_Handler" />
+	</flow>
+	<flow name="depositPAPI-Imp-prcsFlow" doc:id="a59f5cb0-8285-4686-a1c3-da95b888e8fc" >
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="42d6532b-d259-43c2-a144-0842caeec491" message="#[payload]" />
+		<choice doc:name="Copy_of_Choice" doc:id="5e907fc0-3338-4449-a39a-ea62a8a623fa" >
+			<when expression='#[payload.hint == "errorResponse"]' >
+				<logger level="INFO" doc:name="Copy_of_Logger" doc:id="ce1e87f3-2eb9-4244-b1f9-faad5f6cc317" />
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="9d264dbf-82ef-4656-af69-4544a8e9a757" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.errorMsgAccountStatus]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[payload.accountStatus == "InActive"]' >
+				<logger level="INFO" doc:name="Copy_of_Logger" doc:id="282ed591-02e4-40a2-a561-ba10793ce0a1" />
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="593d8d35-0a4c-4090-96a8-d19bdd2c33d1" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"custAccNum": payload.custAccNum,
+	"AccountStatus": payload.accountStatus,
+	"errorMessage": payload.error,
+	"wrongPin": 0,
+	"totalBalance": payload.totalBalance as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload]" doc:name="Copy_of_Set Variable" doc:id="d1d1f4af-4ebc-4395-a364-e928df69c801" variableName="Blockedmsg" />
+				<http:request method="PATCH" doc:name="Request" doc:id="a383784a-b1cb-48cc-bde6-86ab8414362f" responseTimeout="500000" path="/api/deposit" config-ref="HTTP_Request_configuration">
+						<error-mapping targetType="APP:HTTP_REQUEST" />
+				</http:request>
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="e98a93fb-0258-4559-a4d1-5a57a7156e29" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+---
+{
+	"ErrorMessage": vars.Blockedmsg.errorMessage,
+	"accountStatus" : vars.Blockedmsg.AccountStatus
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<try doc:name="Try" doc:id="9f5ff206-5e67-421d-bf7d-637f57ff63c8" >
+					<email:send doc:id="401b2ae1-fe88-4576-aeab-a8dfd5747fe3" config-ref="Email_SMTP" fromAddress="asamohanramsai@gmail.com" subject=" Account Blocked !" doc:name="Copy_of_Send">
+					<email:to-addresses>
+						<email:to-address value="asamohanramsai@gmail.com" />
+					</email:to-addresses>
+					<email:body contentType="text/plain">
+						<email:content><![CDATA[#[{
+	"message" : "This is to inform you that Your Account has been be blocked 
+due to 3 failed attempts. Please reach out nearest branch to unblock"
+}]]]></email:content>
+					</email:body>
+				</email:send>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b7f781ad-79cb-4aa9-8a8a-88f95b6066cf" >
+							<ee:transform doc:name="Transform Message" doc:id="7dbbcfba-dcaf-438f-b18c-db5e51526b1d" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"message": payload,
+"ErrorResponse": error.description,
+"Error": "error in email"
+
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+			<when expression='#[payload.hint == "depositError"]' >
+				<logger level="INFO" doc:name="Copy_of_Logger" doc:id="df623095-a97c-44ef-b825-452520a9abe9" message="#[payload]" />
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="bb90b86d-e311-4eb4-ac3b-56565aab36b2" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{ "error" : payload.error
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[payload.hint == "depositMoney"]' >
+				<logger level="INFO" doc:name="Copy_of_Logger" doc:id="395d72bf-6d8b-494c-aadb-422777163593" message="#[payload]" />
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="4e9a8811-e370-4dbf-b0a0-522c961f182e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"custAccNum": payload.accountNum,
+	"totalBalance": payload.totalBalance as String,
+	"deposit" : payload.deposit
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload]" doc:name="Copy_of_Set Variable" doc:id="53564401-96b8-49f0-ae07-91483ee2e070" variableName="deposit" />
+				<http:request method="PATCH" doc:name="Request" doc:id="5cd81c59-fe7c-4632-9e86-b25e967147d0" responseTimeout="5000000" path="/api/deposit" config-ref="HTTP_Request_configuration">
+						<error-mapping targetType="APP:HTTP_REQUEST" />
+				</http:request>
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="68f74c1f-f4b0-4e9a-bc01-d349fee4f3e3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+{
+	"totalBalance" : vars.deposit.totalBalance,
+	"accountNum" : vars.deposit.custAccNum,
+	"deposit" : vars.deposit.deposit,
+	"message": "you have deposit money. And you will recieve a message through Gmail or SMS"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<try doc:name="Try" doc:id="28a6c26e-db72-43af-88ef-a957e52482f2" >
+					<email:send doc:id="fabc35d8-8834-4959-a785-c87dab091ab6" config-ref="Email_SMTP" fromAddress="asamohanramsai@gmail.com" subject='#["Deposit Money Alert!"]' doc:name="Copy_of_Send">
+					<email:to-addresses>
+						<email:to-address value="asamohanramsai@gmail.com" />
+					</email:to-addresses>
+					<email:body contentType="text/plain">
+						<email:content><![CDATA[#[{
+	"message" : "This is to inform you that Your Account has deposited money with "
+       ++ payload.deposit ++ " amount and your Total Balance is  " ++ payload.totalBalance
+}]]]></email:content>
+					</email:body>
+				</email:send>
+					<error-handler>
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="260d73ad-a39d-43f4-a935-9e78c3fb42bb" >
+							<ee:transform doc:name="Transform Message" doc:id="fce8b6cc-9f4d-4723-8c98-a1740fe8c7cd" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"message": payload,
+"ErrorResponse": error.description,
+"Error": "error in email"
+
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+			<when expression='#[payload.hint == "InvalidPin"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="e5b39a3d-b69b-4fa7-bbfa-ac9edbe436eb" />
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="b33ea68b-2c61-4e7c-a075-bb9dd0a7fa3a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"custAccNum": payload.custAccNum,
+	"errorMessage": payload.error,
+	"wrongPin": payload.wrongPin,
+	"totalBalance": payload.totalBalance as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload]" doc:name="Copy_of_Set Variable" doc:id="9dadcd32-93e1-4be9-b4b3-babd65f49372" variableName="updateWrongPinMsg" />
+				<http:request method="PATCH" doc:name="Request" doc:id="c756436e-74fa-412e-907d-ee8b1493902c" path="/api/deposit" config-ref="HTTP_Request_configuration"/>
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="1142acce-ffdc-4eb9-ba15-1b99e8a5d4ae" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var finalRetries=(3) - (vars.updateWrongPinMsg.wrongPin)
+---
+{
+	"ErrorMessage": vars.updateWrongPinMsg.errorMessage,
+	"retries": ["Your remaining retries are"] + finalRetries
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<try doc:name="Copy_of_Try" doc:id="d0094e7c-2e79-4941-8043-d3b6df35a4ff" >
+					<email:send doc:name="Copy_of_Send" doc:id="0735db1b-4e35-4bb5-851f-e8dfd5779598" config-ref="Email_SMTP" fromAddress="asamohanramsai@gmail.com" subject='#["Failed Attempt !"]' >
+						<email:to-addresses >
+							<email:to-address value="asamohanramsai@gmail.com" />
+						</email:to-addresses>
+						<email:body contentType="text/plain" >
+							<email:content ><![CDATA[#[{
+"message":	"This is to inform you that there’s a failed attempt happened 
+while transaction . Your Account will be blocked after 3 attempts"
+}]]]></email:content>
+						</email:body>
+					</email:send>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="Copy_of_On Error Continue" doc:id="86bab164-09b3-4c6f-982e-9ffad5239843" type="ANY" >
+							<ee:transform doc:name="Copy_of_Transform Message" doc:id="5fc4f9c7-85c7-4871-b298-fb33b4c8fb05" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"message": payload,
+"ErrorResponse": error.description,
+"Error": "error in email"
+
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+		</choice>
+
+	</flow>
+</mule>

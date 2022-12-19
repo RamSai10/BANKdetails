@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd ">
+    <munit:config name="bankprcslyr-apikit-test.xml" />
+    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+        <http:request-connection host="localhost" port="8081" />
+    </http:request-config>
+    <munit:test name="post:\creatAccount:application\json:bankprcslyr-config-201-application\json-FlowTest" description="Verifying functionality of [post:\creatAccount:application\json:bankprcslyr-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="bankprcslyr-main" />
+            <munit:enable-flow-source value="post:\creatAccount:application\json:bankprcslyr-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <munit-tools:mock-when doc:name="Copy_of_Mock when" doc:id="3a0b9dd3-a196-480e-9f8b-d9974ef44937" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="7adb654a-5bad-436a-96eb-afdb2271e5bc" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[{&#10;  "message": " Congratulations ! Your account is created Successfully with\nAccount Number is 4545454541  with these bank  HDFC"&#10;}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="28db01fd-4137-42e7-88b1-2fb24a41df46" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue='#["Congratulations ! Account created"]' attributeName="subject" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#["Congratulations ! Account created"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_creataccount_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+            <munit:set-event doc:name="Set Event" doc:id="0ca0c3f1-5898-4f55-a260-bc1185e5fc66" >
+				<munit:payload value='#[{&#10;    "accountNum" : "0011223377",&#10;    "atmPin" : "4321",&#10;    "ifscCode" : "4321",&#10;    "mailId" : "shruthi@gmail.com",&#10;    "contact" : "8623833990"&#10;&#10;}]' />
+			</munit:set-event>
+			<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/creatAccount">
+                <http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"HDFC","branchName":"HDFC","type":"savings","customerName":"Mounika"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="01525703-f83b-4f5a-8d09-10eca9060041" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    <munit:test name="put:\unblock:application\json:bankprcslyr-config-200-application\json-FlowTest" description="Verifying functionality of [put:\unblock:application\json:bankprcslyr-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="bankprcslyr-main" />
+            <munit:enable-flow-source value="put:\unblock:application\json:bankprcslyr-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/put_unblock_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="PUT" path="/unblock">
+                <http:headers>#[{"Accept":"application/json","Content-Type":"application/json"}]</http:headers>
+            </http:request>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 200" />
+            <munit-tools:assert-that expression="#[output application/java ---write(payload, 'application/json') as String]" is="#[MunitTools::equalTo(MunitTools::getResourceAsString('scaffolder/response/put_200_unblock_application_json.json'))]" message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
+        </munit:validation>
+    </munit:test>
+    <munit:test name="post:\checkBalance:application\json:bankprcslyr-config-200-application\json-FlowTest" description="Verifying functionality of [post:\checkBalance:application\json:bankprcslyr-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="bankprcslyr-main" />
+            <munit:enable-flow-source value="post:\checkBalance:application\json:bankprcslyr-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_checkbalance_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="POST" path="/checkBalance">
+                <http:headers>#[{"Accept":"application/json","Content-Type":"application/json"}]</http:headers>
+                <http:query-params>#[{"bank":"","type":""}]</http:query-params>
+            </http:request>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 200" />
+            <munit-tools:assert-that expression="#[output application/java ---write(payload, 'application/json') as String]" is="#[MunitTools::equalTo(MunitTools::getResourceAsString('scaffolder/response/post_200_checkbalance_application_json.json'))]" message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
+        </munit:validation>
+    </munit:test>
+    <munit:test name="post:\withDraw:application\json:bankprcslyr-config-201-application\json-FlowTest" description="Verifying functionality of [post:\withDraw:application\json:bankprcslyr-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="bankprcslyr-main" />
+            <munit:enable-flow-source value="post:\withDraw:application\json:bankprcslyr-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_withdraw_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="POST" path="/withDraw">
+                <http:headers>#[{"Accept":"application/json","Content-Type":"application/json"}]</http:headers>
+                <http:query-params>#[{"bank":"","type":""}]</http:query-params>
+            </http:request>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(201)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 201" />
+            <munit-tools:assert-that expression="#[output application/java ---write(payload, 'application/json') as String]" is="#[MunitTools::equalTo(MunitTools::getResourceAsString('scaffolder/response/post_201_withdraw_application_json.json'))]" message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
+        </munit:validation>
+    </munit:test>
+</mule>

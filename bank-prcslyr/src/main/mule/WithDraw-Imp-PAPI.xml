@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<http:request-config name="HTTP_Request_configuration-withDrawSAPI" doc:name="HTTP Request configuration" doc:id="b83f853b-074f-4c68-a43d-3dfb2c563da7" >
+		<http:request-connection host="localhost" port="8084" >
+		</http:request-connection>
+	</http:request-config>
+	<flow name="WithDraw-ImpleFlow" doc:id="c17c97d0-3ce6-4c08-8d1f-348f5f16da82" >
+		<set-variable value='#[output application/json&#10;---&#10;&#10;payload]' doc:name="Set Variable" doc:id="70566228-f930-4feb-b096-00e28e195c84" variableName="a" />
+		<http:request method="GET" doc:name="Request" doc:id="0cd0141a-d4cc-4403-a801-9e086620dd9e" responseTimeout="500000" config-ref="HTTP_Request_configuration-withDrawSAPI" path="/api/accountDetails">
+			<error-mapping targetType="INVALID:REQUEST"/>
+			<http:query-params ><![CDATA[#[{
+	"accountNum": payload.accountNum
+	
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="fb1f36d0-670b-4560-8e0d-62c5c2b6d312" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var a = vars.a
+---
+ (if (payload != null )
+{
+                        (if (payload.accountStatus == "active")
+                        {
+                                (if (payload.wrongPin <= 2)
+                                {
+                                    (if (payload.atmPin == a.atmPin)         
+                                        {
+                                       (if (payload.totalBalance >= a.amountToBeWithdraw)
+                                       	  {
+                                       	  	"accountNum": payload.custAccNum,
+                                       	  	"remainingBalance": payload.totalBalance - a.amountToBeWithdraw,
+                                       	  	"hint": "withdraw",
+                                       	  	"wrongPin": 0,
+                                       	  	"withDraw": a.amountToBeWithdraw
+                                       	  	
+                                       	  	}
+                                       	  	else {
+                                       	  		"error": "Insufficient balance . Please enter minimum balance",
+                                       	  		
+                                       	  		"hint": "withdrawError"                                     	  	
+                                       	  	      })
+                                       	  	
+                                       	  	}
+                                       
+                                        
+                                
+                                        else 
+                                        {"error": "Invalid Pin, try with correct pin",
+                                        "wrongPin" : payload.wrongPin + 1,
+                                        "message" : "Login Attempt Failed .Attempts left 2" ,
+                                        "custAccNum" : payload.custAccNum,
+                                        "accountStatus": payload.accountStatus,
+                                        "totalBalance": payload.totalBalance,
+                                        "hint": "InvalidPin"
+                                        })
+                                }              
+                                else
+                                {"error": "retry EXausted",
+                                    "message": "Maximum Attempts reached .Your Account "
+                                    ++ payload.custAccNum   ++ "is temporarily blocked",
+                                    "accountStatus": "InActive",
+                                    "wrongPin": payload.wrongPin,
+                                    "totalBalance": payload.totalBalance,
+                                     "custAccNum" : payload.custAccNum
+                              
+                                })
+
+
+                        } 
+                       else 
+                       {
+                           "errorMsgAccountStatus" : "Account  " ++ payload.custAccNum ++ "  temporarily blocked. Please visit 
+                                nearest Branch" , 
+                            "hint" : "errorResponse"
+                        })
+}
+else
+{ 
+    "errorMsgAccountStatus" : "Account does not exist .. Please Enter Valid Account Number",
+    
+"hint" : "errorResponse"
+})            ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="83ddc84d-e7fc-47d9-9f74-412f54afc71f" name="withDrawlBls-Imp-prcsFlow" />
+		<ee:transform doc:name="Transform Message" doc:id="c056ec5a-dfe8-41d7-a733-de781f2eb1f1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="Global-Error-HandlerError_Handler" />
+	</flow>
+	<flow name="withDrawlBls-Imp-prcsFlow" doc:id="3e5c53b5-4030-4c9b-997d-79e85b67610a">
+		<logger level="INFO" doc:name="Logger" doc:id="f4aa1a34-7f44-45bd-b81d-6fb9125ac3b6" message="#[payload]" />
+		<choice doc:name="Choice" doc:id="8f5dd4ef-3583-409d-8512-697de1c6824d">
+			<when expression='#[payload.hint == "InvalidPin"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="7b0bddd5-920e-44c9-b403-f04d81d3a8e9" />
+				<ee:transform doc:name="Transform Message" doc:id="15ff7422-8a53-42a4-a5ac-4e4995d81e45">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"custAccNum": payload.custAccNum,
+	"errorMessage": payload.error,
+	"wrongPin": payload.wrongPin,
+	"totalBalance": payload.totalBalance as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload]" doc:name="Set Variable" doc:id="9757df44-0964-4ef6-8100-d7a0419d0a5a" variableName="updateWrongPinMsg" />
+				<http:request method="PATCH" doc:name="Request" doc:id="7bccaf31-c217-4c5b-affd-fe2d73af6d22" config-ref="HTTP_Request_configuration-withDrawSAPI" path="/api/withDraw" responseTimeout="500000">
+					<error-mapping targetType="INVALID:REQUEST" />
+				</http:request>
+				<ee:transform doc:name="Transform Message" doc:id="4f501981-a466-4861-a5d1-1e59282b26cf">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var finalRetries=(3) - (vars.updateWrongPinMsg.wrongPin)
+---
+{
+	"ErrorMessage": vars.updateWrongPinMsg.errorMessage,
+	"retries": ["Your remaining retries are"] + finalRetries
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<try doc:name="Try" doc:id="b471081c-5a37-4ca0-9f32-243350b056ce">
+					<email:send doc:name="Send" doc:id="a0a60f15-d926-430d-abaa-bc3d63e198d6" config-ref="Email_SMTP1" fromAddress="asamohanramsai@gmail.com" subject='#["Failed Attempt !"]'>
+					<email:to-addresses>
+						<email:to-address value="asamohanramsai@gmail.com" />
+					</email:to-addresses>
+					<email:body contentType="text/plain">
+						<email:content><![CDATA[#[output application/json
+---
+{
+"message":	"This is to inform you that there’s a failed attempt happened 
+while transaction . Your Account will be blocked after 3 attempts"
+}]]]></email:content>
+					</email:body>
+				</email:send>
+					<error-handler>
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5d495d2a-73ef-4d96-8556-98514d6b72ca" type="ANY">
+							<ee:transform doc:name="Transform Message" doc:id="bd9eea75-3cd3-4f3f-885d-935501c42692">
+								<ee:message>
+									<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{"message": payload,
+"ErrorResponse": error.description,
+"Error": "error in email"
+
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+			<when expression='#[payload.hint == "errorResponse"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="3513a49b-5b4d-4a98-8540-d4a6e1091559" />
+				<ee:transform doc:name="Transform Message" doc:id="57a71fa3-d4bb-4738-ad76-7270bf96f5ca">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.errorMsgAccountStatus]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[payload.accountStatus == "InActive"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="22b65a6c-4558-4715-a054-99079dc23bde" />
+				<ee:transform doc:name="Transform Message" doc:id="5250ce5a-e6d4-4804-983a-d54eaf3e76af">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"custAccNum": payload.custAccNum,
+	"AccountStatus": payload.accountStatus,
+	"errorMessage": payload.error,
+	"wrongPin": 0,
+	"totalBalance": payload.totalBalance as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload]" doc:name="Set Variable" doc:id="2842938f-af9f-4094-9217-b0e8ea3e3f1f" variableName="Blockedmsg" />
+				<http:request method="PATCH" doc:name="Copy_of_Request" doc:id="fb5bad30-acab-4c64-ac90-a76163e9598b" config-ref="HTTP_Request_configuration-withDrawSAPI" path="/api/withDraw" responseTimeout="500000">
+					<error-mapping targetType="INVALID:REQUEST" />
+				</http:request>
+				<ee:transform doc:name="Transform Message" doc:id="d1818016-7bf1-4bfa-a77b-5e198513153e">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+
+output application/json
+---
+{
+	"ErrorMessage": vars.Blockedmsg.errorMessage,
+	"accountStatus" : vars.Blockedmsg.AccountStatus
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<try doc:name="Try" doc:id="2f5390e6-4c3b-4f79-b438-73f094560ea5">
+					<email:send doc:name="Send" doc:id="11cc9d57-b44d-4422-9818-da2764e76ccb" config-ref="Email_SMTP1" fromAddress="asamohanramsai@gmail.com" subject=" Account Blocked !">
+						<email:to-addresses>
+						<email:to-address value="asamohanramsai@gmail.com" />
+					</email:to-addresses>
+					<email:body contentType="text/plain">
+						<email:content><![CDATA[#[{
+	"message" : "This is to inform you that Your Account has been be blocked 
+due to 3 failed attempts. Please reach out nearest branch to unblock"
+}]]]></email:content>
+					</email:body>
+				</email:send>
+					<error-handler>
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="21593ff1-5abd-4fe4-98a9-5056adb75804" type="ANY">
+							<ee:transform doc:name="Transform Message" doc:id="445b7f64-51d2-4c48-832f-7c6531942b03">
+								<ee:message>
+									<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{"message": payload,
+"ErrorResponse": error.description,
+"Error": "error in email"
+
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+			<when expression='#[payload.hint == "withdrawError"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="e7df1a84-bb8b-48bc-8593-e78b66049c7d" message="#[payload]" />
+				<ee:transform doc:name="Transform Message" doc:id="984a29b7-b08f-4037-8fe5-37f546463ec8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{ "error" : payload.error
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[payload.hint == "withdraw"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="dd5c9b75-5dd9-417b-853e-63e154781db1" message="#[payload]" />
+				<ee:transform doc:name="Transform Message" doc:id="2384333e-f420-4081-a54f-61c67ab550ff">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"custAccNum": payload.accountNum,
+	"totalBalance": payload.remainingBalance as String,
+	"withDraw" : payload.withDraw,
+	"wrongPin": payload.wrongPin
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload]" doc:name="Set Variable" doc:id="7e7ad5af-7b8c-4899-ace3-aae39aafa65a" variableName="withdraw" />
+				<http:request method="PATCH" doc:name="Request" doc:id="5174ac20-62be-4e1c-9c2e-07bde618e4dc" config-ref="HTTP_Request_configuration-withDrawSAPI" path="/api/withDraw" responseTimeout="500000">
+					<error-mapping targetType="INVALID:REQUEST" />
+				</http:request>
+				<ee:transform doc:name="Transform Message" doc:id="81f77056-d43b-49c7-90e0-b3c1b9717b06">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+---
+{
+	"totalBalance" : vars.withdraw.totalBalance,
+	"accountNum" : vars.withdraw.custAccNum,
+	"withdraw" : vars.withdraw.withDraw
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<try doc:name="Try" doc:id="9d3fe867-1244-44af-b04f-3d0887850c5b">
+					<email:send doc:name="Send" doc:id="4a7e18da-3d9e-4304-bf46-63ef40220c53" config-ref="Email_SMTP1" fromAddress="asamohanramsai@gmail.com" subject='#["Transaction Alert!"]'>
+						<email:to-addresses>
+						<email:to-address value="asamohanramsai@gmail.com" />
+					</email:to-addresses>
+					<email:body contentType="text/plain">
+						<email:content><![CDATA[#[{
+	"message" : "This is to inform you that Your Account has been debited with "
+       ++ payload.withdraw ++ " amount and your Total Balance is  " ++ payload.totalBalance
+}]]]></email:content>
+					</email:body>
+				</email:send>
+					<error-handler>
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="1993916e-6d02-4dd9-95c2-ec6aade0c67b" type="ANY">
+							<ee:transform doc:name="Transform Message" doc:id="1a2f07e7-9f6a-4e14-a869-8a95a2a3cbf5">
+								<ee:message>
+									<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{"message": payload,
+"ErrorResponse": error.description,
+"Error": "error in email"
+
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+		</choice>
+	
+	</flow>
+</mule>

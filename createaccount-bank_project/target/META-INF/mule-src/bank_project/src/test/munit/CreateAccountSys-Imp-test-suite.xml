@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="CreateAccountSys-Imp-test-suite.xml" />
+	<munit:test name="CreateAccountSys-Imp-test-suite-bank_projectFlowTest" doc:id="1e01c46a-7df5-4b13-a79e-ea81f31463bd" description="Test">
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="f58e2cc8-e592-44e2-9429-c41107e61f94" >
+				<munit:payload value='#[{&#10;    "accountNum" : "4545454534",&#10;    "atmPin" : "4444",&#10;    "ifscCode" : "4321",&#10;    "mailId" : "lakshman@gmail.com",&#10;    "contact" : "8623833990"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{customerName:"lakshmanSai",bank:"HDFC","type":"savings",branchName:"HDFC"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to bank_projectFlow" doc:id="2ab63ffb-158a-4f90-bb05-100bcb6211b8" name="bank_projectFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="79e92505-ba8f-48cd-9221-932fd1b3c709" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+
+<munit:test name="CreateAccountSysError-Imp-test-suite-bank_projectFlowTest" doc:id="32c6b7af-e775-48a1-9179-0c905877eb95" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="55396fa1-1b11-4c52-ac83-6e31cdef98f3" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="88cef6fd-2ae0-4d30-97e8-b3796104690d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="c7946e94-adc8-4121-8c43-b341ff32d9e9" >
+				<munit:payload value='#[{&#10;&#10;    "accountNum" : "4545454565",&#10;&#10;    "atmPin" : "4444",&#10;&#10;    "ifscCode" : "4321",&#10;&#10;    "mailId" : "lakshman@gmail.com",&#10;&#10;    "contact" : "8623833990"&#10;&#10;&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{customerName:"lakshmanSai",bank:"HDFC","type":"savings",branchName:"HDFC"}}]' />
+			
+</munit:set-event>
+			<try doc:name="Try" doc:id="d6fdc41e-fce7-454a-bf51-0b34c72cdeef" >
+				<flow-ref doc:name="Flow-ref to bank_projectFlow" doc:id="6ddecb26-c214-428b-90fe-98c0820d18cd" name="bank_projectFlow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3d7c1745-9ae0-4e02-a4f3-5e57edf25497" >
+						<logger level="INFO" doc:name="Logger" doc:id="d7fc4bcb-81e0-44cf-9a00-5ff1d1756778" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		
+</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="674a6581-5cfa-412d-b1db-bbfa196b16f1" is='#[MunitTools::equalTo( "DATABASE ERROR")]' expression="#[payload.error]"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

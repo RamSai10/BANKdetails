@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd ">
+    <munit:config name="depositsys-apikit-test.xml" />
+    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+        <http:request-connection host="localhost" port="8081" />
+    </http:request-config>
+    <munit:test name="patch:\deposit:application\json:depositsys-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\deposit:application\json:depositsys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="depositsys-main" />
+            <munit:enable-flow-source value="patch:\deposit:application\json:depositsys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_deposit_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f1d7b0e6-1282-4792-b322-a476179fb5aa" processor="db:update">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="f8a087ca-b175-49ed-aea7-33df04f31a08" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+			<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/deposit">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+"accountNum" : "0123456789",
+"totalBalance": "6000"}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b34c8f04-cccb-4ee7-b648-6f4aa9efda9f" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    
+    <munit:test name="patch:\depositError:application\json:depositsys-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\deposit:application\json:depositsys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="depositsys-main" />
+            <munit:enable-flow-source value="patch:\deposit:application\json:depositsys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_deposit_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="66531407-d8cb-4fc2-a61a-bb8791fe15b0" processor="db:update">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="f8a087ca-b175-49ed-aea7-33df04f31a08" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="1494e20d-ddff-4d7d-a5fd-34ed6620f54e" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/deposit">
+                <http:body><![CDATA[#[output application/json
+---
+{
+"accountNum" : "0123456789",
+"totalBalance": "6000"}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="aa85859a-5a8c-4c02-9958-aa05e7719cb8" >
+						<logger level="INFO" doc:name="Logger" doc:id="9c90a0d3-dd58-47b8-b0d7-4323bf5bb308" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="37962457-a618-4202-bd3f-a998a01b51ac" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="post:\deposit:application\json:depositsys-config-201-application\json-FlowTest" description="Verifying functionality of [post:\deposit:application\json:depositsys-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="depositsys-main" />
+            <munit:enable-flow-source value="post:\deposit:application\json:depositsys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_deposit_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+			<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/deposit">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "depositMoney": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="6f75a3ce-e9ad-4844-b72a-24a3fab268ad" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    <munit:test name="get:\accountDetails:depositsys-config-200-application\json-FlowTest" description="Verifying functionality of [get:\accountDetails:depositsys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="depositsys-main" />
+            <munit:enable-flow-source value="get:\accountDetails:depositsys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior >
+			<munit-tools:mock-when doc:name="Copy_of_Mock when" doc:id="062f031e-ad67-40a0-ae49-f39a9d532b5a" processor="db:select" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8e625852-08cf-47fc-8e33-a9e7ec05eef3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[{&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "active",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 5500.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;&#10;]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="GET" path="/accountDetails">
+                <http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{accountNum:"0123456789"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b262c52d-2039-40a1-9396-1a929105db00" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="get:\accountDetailsError:depositsys-config-200-application\json-FlowTest" description="Verifying functionality of [get:\accountDetails:depositsys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="depositsys-main" />
+            <munit:enable-flow-source value="get:\accountDetails:depositsys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior >
+			<munit-tools:mock-when doc:name="Copy_of_Mock when" doc:id="23a7f3be-55ab-428d-b0a9-68de9ce988c9" processor="db:select" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8e625852-08cf-47fc-8e33-a9e7ec05eef3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="2dce9b45-a4b5-4c9a-b743-b4ec42898e07" >
+				<http:request config-ref="HTTP_Request_Configuration" method="GET" path="/accountDetails">
+                <http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{accountNum:"0123456789"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b81c40f8-f5c9-4346-b217-6354660a934c" >
+						<logger level="INFO" doc:name="Logger" doc:id="9d686711-facb-46d1-a8a2-d552d2380d95" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7b55a891-a654-4c4b-b85e-c88302fddf4c" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    
+    <munit:test name="deposit-UNSUPPORTED_MEDIA_TYPE-apikit-testTest1" doc:id="698606bf-bfa5-40ff-94a3-b2bc67cf2581" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a6ef524d-2630-46ef-a32f-17fc52e90f07" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="depositsys-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:UNSUPPORTED_MEDIA_TYPE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="1b3eeab0-d970-4c2f-a271-09f7d1cc976a" >
+				<flow-ref doc:name="Flow Reference" doc:id="4908f49e-4031-4053-ad8e-ccb676994831" name="depositsys-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="70e7454f-56d4-4512-8d1f-a385f69409cd" >
+						<logger level="INFO" doc:name="Logger" doc:id="efe489d2-d426-435a-8e20-ae16f4f994b0" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="01ad8dda-0676-4fc0-9b4c-1781301e227f" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="deposit-NOT_ACCEPTABLE-apikit-testTest" doc:id="57c869bd-74cf-422a-853c-c80496b76544" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="c1c179b1-432e-41b8-ae1f-c7454883856c" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="depositsys-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="f9440476-413c-4206-9386-a2c1ff40200a" >
+				<flow-ref doc:name="Flow Reference" doc:id="150596ae-4153-4539-b425-41c198812859" name="depositsys-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4eda0b6a-3ddc-464f-95cd-541ead05cb26" >
+						<logger level="INFO" doc:name="Logger" doc:id="dad71a5f-2107-4e66-ac64-fdc1fc438ddb" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="ad8338a5-6a9a-4de1-a423-084a905c8ee5" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="deposit-APIKIT:NOT_IMPLEMENTED-apikit-testTest" doc:id="106d2834-e097-4cdf-8f3a-624c25f10d3a" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="80ae0fe1-333f-4a75-b551-d1b4f17a2f49" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="depositsys-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="a7fd0215-8704-4575-bf7d-1ef99e6f5083" >
+				<flow-ref doc:name="Flow Reference" doc:id="c7cf4f80-595b-41ec-a7c9-865148d595eb" name="depositsys-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="cde2220a-a291-4657-8b68-3a9295303be5" >
+						<logger level="INFO" doc:name="Logger" doc:id="ab7b6127-c140-40dd-9b7c-60250191ff01" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="cf455677-af01-4c8e-bbad-e8881da7ed7c" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="deposit-ConsoleNOT_FOUND-apikit-testTest" doc:id="4474604f-c6c5-411f-956a-59c4153217e1" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="173acc51-323e-4b68-9e69-98030047820e" processor="apikit:console">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="depositsys-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="55be7bb0-8994-45b5-833f-4be4a7edb325" >
+				<flow-ref doc:name="Flow Reference" doc:id="98fcc4d3-a91a-419b-b078-6828874c08d6" name="depositsys-console"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="ffe4d332-6e87-4e2b-b8d7-e4e6a2bee60e" >
+						<logger level="INFO" doc:name="Logger" doc:id="a802b5b9-3ba5-48c4-98b1-067374ca3297" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="aa99b30b-45fb-4d80-9d54-20e7a661bb59" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+    
+        <munit:test name="post:\depositMethodNotAllowed:application\json:depositsys-config-201-application\json-FlowTest" description="Verifying functionality of [post:\deposit:application\json:depositsys-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="depositsys-main" />
+            <munit:enable-flow-source value="post:\deposit:application\json:depositsys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_deposit_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="411f5f16-58d3-45cb-9a8f-8b525a5d18a9" >
+				<http:request config-ref="HTTP_Request_Configuration" method="DELETE" path="/deposit">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "depositMoney": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4b4d1d8a-87be-4867-9c49-ddd769229be4" >
+						<logger level="INFO" doc:name="Logger" doc:id="0da4e1a8-5b26-4e08-8df3-ebd4a4823dd3" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="a1c58a16-d7b4-4353-ab2e-e72e18184022" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+        
+        <munit:test name="post:\deposit-BadRequest:application\json:depositsys-config-201-application\json-FlowTest" description="Verifying functionality of [post:\deposit:application\json:depositsys-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="depositsys-main" />
+            <munit:enable-flow-source value="post:\deposit:application\json:depositsys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_deposit_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="bc2cd027-8294-46fd-938b-563bfe862b6f" >
+				<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/deposit">
+                <http:body><![CDATA[#[{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "depositMoney": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="67c1c02a-4fd7-450f-9ffc-0aca36fe0fe9" >
+						<logger level="INFO" doc:name="Logger" doc:id="1f11ad2d-3890-4efc-bef7-a71d9f6df75b" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="6c845b9f-73a9-4db2-a8be-3b047f7cb290" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+        
+        <munit:test name="post:\depositResourcesNotFound:application\json:depositsys-config-201-application\json-FlowTest" description="Verifying functionality of [post:\deposit:application\json:depositsys-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="depositsys-main" />
+            <munit:enable-flow-source value="post:\deposit:application\json:depositsys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_deposit_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="fa66c209-8b7d-4379-9a89-3900845b9b03" >
+				<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/depositss">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488",
+       "depositMoney": "500"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7ed03abf-b227-4b20-86f1-f0b1152f5610" >
+						<logger level="INFO" doc:name="Logger" doc:id="26ff1f7b-3282-4293-9bf9-185eff53fae8" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="851c5c58-2e8e-4417-8152-a47fd1ad908f" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+        
+    
+</mule>

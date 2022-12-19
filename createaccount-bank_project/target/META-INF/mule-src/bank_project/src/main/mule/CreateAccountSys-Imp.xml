@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="876c33d7-e5df-4214-9b84-1d9fbd846529" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="bank_projectFlow" doc:id="3d0e7d08-1205-4104-91ef-cf919c2b096f" >
+		<set-variable value="#[payload.accountNum]" doc:name="Set Variable" doc:id="ac818d1e-4365-472b-9907-e4d70d334497" variableName="accNum"/>
+		<set-variable value="#[attributes.queryParams.bank]" doc:name="Set Variable" doc:id="af71de40-eca0-48e4-8a07-38895f8465bb" variableName="bankName"/>
+		<db:insert doc:id="88cef6fd-2ae0-4d30-97e8-b3796104690d" config-ref="Database_Config1">
+			<db:sql ><![CDATA[insert into bank.bankdetails values ( :cname, :accNum, :atmpin, :bname, :accType, :ifsc,
+:branchName, :tbalance, :TTStamp, :accStatus , :wrongpin ,:mailId, :contact)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+		cname : attributes.queryParams.customerName,
+		bname : attributes.queryParams.bank,
+		accType : attributes.queryParams."type",
+		branchName: attributes.queryParams.branchName,
+		accNum : payload.accountNum,
+		atmpin : payload.atmPin,
+		ifsc : payload.ifscCode,
+		TTStamp : now() as String {format : "yyyy-MM-dd"},
+		accStatus : "active",
+		wrongpin : 0,
+		tbalance : payload.depositAmount default 0,
+		mailId: payload.mailId,
+		contact: payload.contact
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="59461cd6-289a-4d6f-8489-661dd5c8e3a4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"message": "inserted successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="779087a0-9e0d-44c0-ab1f-69ac65ad88a6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"message" : " Congratulations ! Your account is created Successfully with
+Account Number is " ++ vars.accNum as String ++ "  with these bank  " 
+++ vars.bankName as String
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4ee75373-10f8-4702-8ad3-24c646ce55e8" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="56f33bf5-fc13-4805-8898-51957d503b0c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+   "error": "DATABASE ERROR",
+
+   "message": error.description,
+
+   "detail": "check the database connections"
+
+} ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="fd16a505-e2bb-4a50-aee3-2b5e4a811b7c" >
+		<http:request-connection host="localhost" port="8081" >
+		</http:request-connection>
+	</http:request-config>
+	<flow name="createAccountFlow" doc:id="593a414f-d19c-4ab6-bfe2-8b35e4d6de89" >
+		<http:request method="POST" doc:name="Request" doc:id="7adb654a-5bad-436a-96eb-afdb2271e5bc" config-ref="HTTP_Request_configuration" path="/api/createAccount" responseTimeout="50000">
+			<error-mapping targetType="INVALID:HTTP_REQUEST" />
+			<http:query-params ><![CDATA[#[{
+	customerName : attributes.queryParams.customerName,
+		bank : attributes.queryParams.bank,
+		"type" : attributes.queryParams."type",
+		branchName: attributes.queryParams.branchName
+}]]]></http:query-params>
+		</http:request>
+		<try doc:name="Try" doc:id="7ded649f-2a75-41e2-96a9-822da6f53b76" >
+			<email:send doc:name="Send" doc:id="74822f34-ca59-4d2b-9416-c1a3f51668ab" config-ref="Email_SMTP1" fromAddress="asamohanramsai@gmail.com" subject='#["Congratulations ! Account created"]'>
+			<email:to-addresses>
+				<email:to-address value="asamohanramsai@gmail.com" />
+			</email:to-addresses>
+			<email:body contentType="text/plain" />
+		</email:send>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3259612c-b298-41fe-9085-d88b606bd7b9" type="ANY">
+					<ee:transform doc:name="Transform Message" doc:id="4c3d16c2-b48f-4609-a0cb-55d4213cf2ae" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"message": "error in email connection",
+	"error": error."type"
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Copy_of_Transform Message" doc:id="45e46f6a-ab17-46e2-ada8-e11e4ad41f65" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+
+"successfully Account Created"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="Global-Error-HandlerError_Handler" />
+	</flow>
+</mule>

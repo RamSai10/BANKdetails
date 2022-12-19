@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="Global-Error-HandlerError_Handler" doc:id="a8298b5e-f187-4af2-a5ca-4c5409e2e32a" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7b97efe6-68e3-419b-b14a-925c787e4b10" type="APP:HTTP_REQUEST">
+			<ee:transform doc:name="Transform Message" doc:id="19afa846-72bb-4c5b-8c23-50e7c815d6ab">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{"error": error.description,
+	"message": "HTTP Request Error"
+} ]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="17045a36-5568-476b-8bd6-f4d91df2e0be" type="ANY">
+			<ee:transform doc:name="Transform Message" doc:id="b57be8f4-ecbc-4460-ab30-0866374a4152">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": error.muleMessage.typedValue default error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>

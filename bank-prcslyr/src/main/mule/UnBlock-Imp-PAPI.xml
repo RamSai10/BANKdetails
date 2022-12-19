@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<http:request-config name="HTTP_Request_configuration-UnblockSAPI" doc:name="HTTP Request configuration" doc:id="a5dc0a6b-f3f1-4f19-b85d-9ef41f0b12c5" >
+		<http:request-connection host="localhost" port="8085" >
+		</http:request-connection>
+	</http:request-config>
+	<flow name="UnBlock-ImpleFlow" doc:id="1655dc31-5abe-495c-8eb8-be8560c4046c" >
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="3a8bd902-3dc3-4be6-8f48-f0c73aa0d972" variableName="a" />
+		<http:request method="GET" doc:name="Request" doc:id="a92e364f-4ef7-4c9c-8a68-178eb9bbfbff" config-ref="HTTP_Request_configuration-UnblockSAPI" path="/api/accountDetails" responseTimeout="50000" >
+			<error-mapping targetType="INVALID:HTTP_REQUEST" />
+			<http:query-params ><![CDATA[#[{
+	"accountNum": payload.accountNum
+	
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="b508b809-981c-4da6-9e82-ad73b7d53822" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var a = vars.a
+---
+ (if ((payload.custAccNum == a.accountNum ) and (payload.bankName == a.bank))
+{
+    (if (payload.accountStatus == "active")
+    {
+        "message":"Account " ++ payload.custAccNum ++" is Active.",
+        "hint": "Success"
+    }
+    else{"message" : "Account " ++ payload.custAccNum ++"  is 
+Unblocked.",
+        "accountStatus": "active",
+        "custAccNum": payload.custAccNum,
+        "wrongPin": 0,
+       "hint": "InActive"
+    })
+}else{
+    "error": "Account " ++ payload.custAccNum ++ " does not exist . 
+Enter Valid account number or Bank Name",
+"hint" : "errorResponse"
+})           ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="b15b1a48-21ef-4446-88e6-f04f32aa276c" name="UnBlock-Imp-PAPIFlow" />
+		<ee:transform doc:name="Transform Message" doc:id="5f871113-7997-4313-8147-108091a4a3af" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+ payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="Global-Error-HandlerError_Handler" />
+	</flow>
+	<flow name="UnBlock-Imp-PAPIFlow" doc:id="6c0c187f-dca4-4809-9ddd-531aae3de350" >
+		<logger level="INFO" doc:name="Logger" doc:id="2da86461-d4d2-419e-a4e2-6fd496d51aee" message="#[payload]"/>
+		<choice doc:name="Choice" doc:id="1af147b8-222f-4edb-87ec-a03573285574" >
+			<when expression='#[payload.hint == "Success"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="9d96a95a-9e59-4894-a516-1ae38e90133e" message="#[payload]"/>
+				<ee:transform doc:name="Transform Message" doc:id="2fcd6e9f-9c4d-48a6-9c7c-f1f50cad2ec1" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"Message" : payload.message} ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[payload.hint == "InActive"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="a6082fff-c422-422d-a844-e75448846814" message="#[payload]"/>
+				<ee:transform doc:name="Transform Message" doc:id="d2fe3bd5-9f91-49f0-a421-fde331aa3a59" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message" : payload.message,
+	"AccountStatus": payload.accountStatus,
+	"wrongPin" : payload.wrongPin,
+	"custAccNum": payload.custAccNum
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload]" doc:name="Set Variable" doc:id="68d1dba8-ee61-43e4-b788-0e85ccbdfb21" variableName="unblock"/>
+				<http:request method="PATCH" doc:name="Request" doc:id="4ccb1ede-58e5-4607-a975-38bcf29442ea" responseTimeout="50000" config-ref="HTTP_Request_configuration-UnblockSAPI" path="/api/unblock">
+						<error-mapping targetType="INVALID:HTTP_REQUEST" />
+				</http:request>
+				<ee:transform doc:name="Transform Message" doc:id="55679819-42ff-4fda-b547-92296145ab85" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message": vars.unblock.Message,
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<try doc:name="Try" doc:id="f750231a-cd29-41c8-9d2b-8c12f6b04ba9" >
+					<email:send doc:name="Send" doc:id="dff28461-7f29-453d-9685-76a2092756ec" config-ref="Email_SMTP1" fromAddress="asamohanramsai@gmail.com" subject='#["Account Unblocked"]'>
+					<email:to-addresses>
+						<email:to-address value="asamohanramsai@gmail.com" />
+					</email:to-addresses>
+					<email:body contentType="text/plain">
+						<email:content><![CDATA[#[{
+	"Message" : "This is to inform you that Your Account has been unblocked"
+}]]]></email:content>
+					</email:body>
+				</email:send>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4fccff4f-71e7-4538-9d7a-d4a88e61f4ab" type="ANY">
+							<ee:transform doc:name="Transform Message" doc:id="38ef90b6-1873-483d-816c-58f9c2e6ffe6" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"message": payload,
+	"error": "error in Email"
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+			<when expression='#[payload.hint == "errorResponse"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="c6118c71-220d-4e1a-95d5-43d1eee08977" message="#[payload]"/>
+				<ee:transform doc:name="Transform Message" doc:id="ab278687-47c1-4903-b127-1015059bbe44" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{"message": payload.error
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+		</choice>
+		
+	</flow>
+</mule>

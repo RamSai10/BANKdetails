@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain:mule-domain
+        xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+        xmlns:email="http://www.mulesoft.org/schema/mule/email"
+        xmlns:db="http://www.mulesoft.org/schema/mule/db"
+        xmlns="http://www.mulesoft.org/schema/mule/core"
+        xmlns:domain="http://www.mulesoft.org/schema/mule/ee/domain" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+               http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+               http://www.mulesoft.org/schema/mule/ee/domain http://www.mulesoft.org/schema/mule/ee/domain/current/mule-domain-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="e0b91819-0a37-40c3-a4cb-b8368ae16632" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${secure::db.password}" database="bank" />
+	</db:config>
+	<email:smtp-config name="Email_SMTP1" doc:name="Email SMTP" doc:id="1809b27a-b5ab-472d-a7d2-0a594388ff53" >
+		<email:smtp-connection host="${smtp.host}" port="${smtp.port}" user="${secure::smtp.user}" password="${secure::smtp.password}" connectionTimeout="50" readTimeout="50" >
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="True" />
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="9a2e6b2f-3c2b-41b4-901b-09974c263ef2" file="dev1.yaml" key="mulesoft" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="98d0527a-b9b6-4d66-83a2-66b936ddfc6a" file="dev1.yaml" />
+
+
+    <!-- configure here resource to be shared within the domain -->
+
+</domain:mule-domain>

@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="WithDraw-Imp-PAPI-test-suite.xml" />
+	<munit:test name="WithDraw-Imp-PAPI-test-suite-WithDraw-ImpleFlowTest" doc:id="a50ec07d-6c09-4964-b8bb-38e11a7a4309" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="7c585714-6d83-4a49-9ccf-df013ae20798" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "active",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 5000.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f5ba65a5-bac5-42de-8789-85a6f745d5a3" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5174ac20-62be-4e1c-9c2e-07bde618e4dc" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="32c0c1c4-1e99-4e5b-bc00-4758c38bef1f" >
+				<munit:payload value='#[{&#10;       "accountNum": "0123456789",&#10;       "atmPin": "4488",&#10;       "amountToBeWithdraw": "500"&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="64c66378-af01-4ba4-8ad7-f9ffb8d7c980" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="1c85c08a-0f88-46b7-985c-b7fde8e19ccd" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	
+	
+	
+	<munit:test name="WithDraw-Imp-InvalidPin-PAPI-test-suite-WithDraw-ImpleFlowTest" doc:id="1c254387-192e-4408-8dbb-663c519d1d97" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="2e73bfc7-89ad-4269-991e-3f6c61afdb67" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 5000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="769f441e-6ebe-47af-8c97-3d16a17970bd" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7bccaf31-c217-4c5b-affd-fe2d73af6d22" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="945bc120-ad4b-47cc-84f3-07eefecd314c" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "amountToBeWithdraw": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="d22010cc-1a73-4334-a6a2-3c4b48e75bd2" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7299be74-13cf-4d43-b564-c63ce249ea77" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	
+	
+	
+	<munit:test name="WithDraw-Imp-AccountBlock-PAPI-test-suite-WithDraw-ImpleFlowTest" doc:id="e2a129bb-38d5-4437-9a74-8b751cc24605" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="2e496cca-275e-41ba-822f-d7a31809002f" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;&#10;  "atmPin": "4488",&#10;&#10;  "accountType": "savings",&#10;&#10;  "ifscCode": "4488",&#10;&#10;  "wrongPin": 3,&#10;&#10;  "accountStatus": "active",&#10;&#10;  "custAccNum": "0123456789",&#10;&#10;  "contact": "9887472456",&#10;&#10;  "mailId": "thiru@gmail.com",&#10;&#10;  "bankName": "ICICI",&#10;&#10;  "transactionTimeStamp": "2021-12-16",&#10;&#10;  "totalBalance": 5000.000000000,&#10;&#10;  "custName": "Thirupathi",&#10;&#10;  "branchName": "ICICI"&#10;&#10;}&#10;&#10;&#10;&#10;]' />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="e9f71bca-60ef-400a-b437-f75663e9604b" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fb5bad30-acab-4c64-ac90-a76163e9598b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="882d9156-3cd4-475f-aafc-13d57647390e" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "amountToBeWithdraw": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="3046b374-ac7e-4303-9616-9ff6c154afa2" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="288eb9c6-35c3-4ccc-9a9c-b2d14458d7e6" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	
+	
+	<munit:test name="WithDraw-Imp-withdrawalError-PAPI-test-suite-WithDraw-ImpleFlowTest" doc:id="a25adf36-95a5-4de9-87ad-c134c7198ecd" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="ba22bfb6-6c99-4349-bf1c-a1287e2b1d6b" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 5000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="30a3ab45-d9bf-45e3-a360-162c30e9461a" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4488",&#10;&#10;       "amountToBeWithdraw": "50000"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="ad07b12f-5729-4d03-9de2-943987b3d995" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8075d048-6118-4d45-9ee9-e06ba57f35fd" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+
+<munit:test name="WithDraw-Imp-PayloadNull-PAPI-test-suite-WithDraw-ImpleFlowTest" doc:id="6ff235c3-8a62-437e-b086-c11babf04d13" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="c6322126-ace6-4fdc-90f3-b185fb02c4d5" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[null]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="ad536660-ec89-45d9-a50d-26cada5de39a" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456000",&#10;&#10;       "atmPin": "4488",&#10;&#10;       "amountToBeWithdraw": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="3a0e2211-1d7e-46d8-991f-7e444fdd948a" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="3e242748-d571-4e80-bb16-23cdd441a23e" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	
+	
+	<munit:test name="WithDraw-Imp-AccountIsInactive-PAPI-test-suite-WithDraw-ImpleFlowTest" doc:id="a56b4420-255f-4d86-ac89-9460f7b0cae7" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="4179be80-3a3f-4bc4-8370-de8e8e357a9a" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;&#10;  "atmPin": "4488",&#10;&#10;  "accountType": "savings",&#10;&#10;  "ifscCode": "4488",&#10;&#10;  "wrongPin": 0,&#10;&#10;  "accountStatus": "Inactive",&#10;&#10;  "custAccNum": "0123456789",&#10;&#10;  "contact": "9887472456",&#10;&#10;  "mailId": "thiru@gmail.com",&#10;&#10;  "bankName": "ICICI",&#10;&#10;  "transactionTimeStamp": "2021-12-16",&#10;&#10;  "totalBalance": 5000.000000000,&#10;&#10;  "custName": "Thirupathi",&#10;&#10;  "branchName": "ICICI"&#10;&#10;}&#10;&#10;&#10;&#10;]' />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="fb496a0c-f0d2-40a9-b2b4-26fd07eb3b5d" >
+				<munit:payload value='#[{
+&#10;       "accountNum": "0123456789",
+&#10;       "atmPin": "4488",
+&#10;       "amountToBeWithdraw": "500"
+&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="f45c3d11-b046-41c4-b85f-32a692e775b3" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="5ad99374-0113-4c4f-b38c-24e8aa44f67e" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+
+
+	<munit:test name="WithDraw-Imp-PAPI-WithDraw-EmailError-test-suite-WithDraw-ImpleFlowTest" doc:id="996bdd1d-d2bc-4705-9cbf-26c2b84a47bc" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="52e6b206-3206-4998-a63f-d99bb4cebac3" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 5000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="183d9953-6d37-42a9-beab-cabc9a836aed" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5174ac20-62be-4e1c-9c2e-07bde618e4dc" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="71b32a7e-2e4a-4943-8bb4-be2a0e1816ea" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="4a7e18da-3d9e-4304-bf46-63ef40220c53" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="e3e82ec1-aa67-4a95-a5d2-cf9fa7049636" >
+				<munit:payload value='#[{
+&#10;       "accountNum": "0123456789",
+&#10;       "atmPin": "4488",
+&#10;       "amountToBeWithdraw": "500"
+&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="8e6efe64-9e4b-4f18-b676-db4a4df1d479" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="58af793f-86ff-4ebe-ad90-f16c638d9435" is='#[MunitTools::equalTo("error in email")]' expression="#[payload.Error]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="WithDraw-Imp-InvalidPin-EMailError-PAPI-test-suite-WithDraw-ImpleFlowTest" doc:id="2ed6fa83-db85-4729-9432-3860dd5649cd" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="4b4c878c-62e3-464b-ba60-f83a7709ff36" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 5000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="9919ac8b-b31a-4183-9857-3b8eb7551713" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7bccaf31-c217-4c5b-affd-fe2d73af6d22" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="172dac64-5c97-4dd3-bfa6-b08be3a9c851" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a0a60f15-d926-430d-abaa-bc3d63e198d6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="a7b25a92-ab12-43e4-8f54-0462cb9e7486" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "amountToBeWithdraw": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="2660dc9b-a86e-4755-9bed-7af287c362e6" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="209e435e-473c-4fe9-890c-3fb1712265fb" is='#[MunitTools::equalTo("error in email")]' expression="#[payload.Error]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="WithDraw-Imp-AccountBlock-emailError-PAPI-test-suite-WithDraw-ImpleFlowTest" doc:id="f32194ae-b38d-4c77-9354-a04a5a88ab6a" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="89c91ff0-7540-4f26-ba08-100ed8ad9675" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd0141a-d4cc-4403-a801-9e086620dd9e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;&#10;  "atmPin": "4488",&#10;&#10;  "accountType": "savings",&#10;&#10;  "ifscCode": "4488",&#10;&#10;  "wrongPin": 3,&#10;&#10;  "accountStatus": "active",&#10;&#10;  "custAccNum": "0123456789",&#10;&#10;  "contact": "9887472456",&#10;&#10;  "mailId": "thiru@gmail.com",&#10;&#10;  "bankName": "ICICI",&#10;&#10;  "transactionTimeStamp": "2021-12-16",&#10;&#10;  "totalBalance": 5000.000000000,&#10;&#10;  "custName": "Thirupathi",&#10;&#10;  "branchName": "ICICI"&#10;&#10;}&#10;&#10;&#10;&#10;]' />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="4f5cbb95-e6ac-485e-b577-237f4ba50d3d" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fb5bad30-acab-4c64-ac90-a76163e9598b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5d6080b2-24d1-4cd1-ae8b-b45618efbc9a" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="11cc9d57-b44d-4422-9818-da2764e76ccb" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="6fadae66-5dd6-4fed-a741-d437cd1bb8bb" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "amountToBeWithdraw": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to WithDraw-ImpleFlow" doc:id="76747202-23b2-4daa-a560-7fca5603eaa8" name="WithDraw-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c946ad0c-e687-4439-802c-7b5ba3c6d425" is='#[MunitTools::equalTo("error in email")]' expression="#[payload.Error]"/>
+		</munit:validation>
+	</munit:test>
+</mule>

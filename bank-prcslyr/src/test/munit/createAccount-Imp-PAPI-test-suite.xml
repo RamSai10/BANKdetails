@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="createAccount-Imp-PAPI-test-suite.xml" />
+	<munit:test name="createAccount-Imp-PAPI-test-suite-createAccountFlowTest" doc:id="4ef33420-b76b-4b7e-9184-6a934500cd4f" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="2b1cbdd6-6519-4dfb-9e71-1df8155f02ca" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7adb654a-5bad-436a-96eb-afdb2271e5bc" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;  "message": " Congratulations ! Your account is created Successfully with\nAccount Number is 4545454541  with these bank  HDFC"&#10;}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Copy_of_Set Event" doc:id="deb33671-00d9-41bd-b296-fe0f9f3782ea">
+				<munit:payload value='#[{&#10;    "accountNum" : "4545454541",&#10;    "atmPin" : "4444",&#10;    "ifscCode" : "4321",&#10;    "mailId" : "lakshman@gmail.com",&#10;    "contact" : "8623833990"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{customerName:"lakshmanSai",bank:"HDFC","type":"savings",branchName:"HDFC"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to createAccountFlow" doc:id="c4452960-938a-4112-a177-8ce4270106df" name="createAccountFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="9f476460-2460-4d34-8f16-6e4b192ca7b4" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="createAccount-ErrorIn_Email-Imp-PAPI-test-suite-createAccountFlowTest1" doc:id="69accf80-3413-4351-804c-987ed17dd3c1" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Copy_of_Mock when" doc:id="28ad859c-42c7-47e1-b531-9b6bed4fdda7" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7adb654a-5bad-436a-96eb-afdb2271e5bc" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;  "message": " Congratulations ! Your account is created Successfully with\nAccount Number is 4545454541  with these bank  HDFC"&#10;}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="96fd3e05-68fb-4fd8-a54c-a9d9ebd6843e" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="74822f34-ca59-4d2b-9416-c1a3f51668ab" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Copy_of_Copy_of_Set Event" doc:id="8e5519f7-e60a-4496-a5de-c9e221b4a309">
+				<munit:payload value='#[{&#10;    "accountNum" : "4545454541",&#10;    "atmPin" : "4444",&#10;    "ifscCode" : "4321",&#10;    "mailId" : "lakshman@gmail.com",&#10;    "contact" : "8623833990"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{customerName:"lakshmanSai",bank:"HDFC","type":"savings",branchName:"HDFC"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to createAccountFlow" doc:id="61604f68-8191-419c-9817-d265cb5a6315" name="createAccountFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="2a6d6bf1-81e0-46bd-b779-c3d28dee6bfe" is='#[MunitTools::equalTo( "error in email connection")]' expression="#[payload.message]"/>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="createAccount-errorIn-Http-Imp-PAPI-test-suite-createAccountFlowTest" doc:id="a845cba0-59f1-417c-80d5-e872c303a5a9" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="e3bf3e83-e840-4d8d-bf9f-be53d8864096" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7adb654a-5bad-436a-96eb-afdb2271e5bc" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "message": " Congratulations ! Your account is created Successfully with\nAccount Number is 4545454541  with these bank  HDFC"
+&#10;}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Copy_of_Set Event" doc:id="164457a5-9302-4ef7-884c-77738f3acd3d">
+				<munit:payload value='#[{
+&#10;    "accountNum" : "4545454541",
+&#10;    "atmPin" : "4444",
+&#10;    "ifscCode" : "4321",
+&#10;    "mailId" : "lakshman@gmail.com",
+&#10;    "contact" : "8623833990"
+&#10;
+&#10;}]' />
+				<munit:attributes value='#[{queryParams:{customerName:"lakshmanSai",bank:"HDFC","type":"savings",branchName:"HDFC"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to createAccountFlow" doc:id="f19c43bb-60e8-468d-a6cd-e1ff70f77b15" name="createAccountFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="f042e74b-53d7-4a42-8c78-8facb889918f" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	
+
+
+</mule>

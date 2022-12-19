@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<secure-properties:config name="Secure_Properties_Config1" doc:name="Secure Properties Config" doc:id="caafdda6-99aa-42d2-bfb8-1b8c16452c5b" file="dev.yaml" key="mulesoft" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="5ee9abae-d88e-46c0-82c0-c2271f2aeb8f" file="dev.yaml" />
+	<flow name="FetchingDetails-impFlow" doc:id="007fcab2-efd6-451a-8657-cabd8fc073b2" >
+		<db:select doc:name="Select" doc:id="d450f277-ec59-4c32-8f41-47e56d4d2a5d" config-ref="Database_Config1">
+			<db:sql ><![CDATA[select * from bank.bankdetails where custAccNum =:accountNum]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"accountNum": attributes.queryParams.accountNum
+	
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="2a8fab4f-6982-4cfb-8fad-17683a4acd97" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload reduce($$++$)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="619e15d5-9a81-48e6-b847-afb9109471fb" type="ANY" >
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="0fc2c570-6db0-4683-9fe3-fd1dcd893696" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+   "error": "DATABASE ERROR",
+
+   "message": error.description,
+
+   "detail": "check the database connections"
+
+} ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="wrongpinUpdateSys-impFlow" doc:id="660d32e1-937f-44c9-9252-01bddd6e8b08" >
+		<db:update doc:name="Update" doc:id="c6a66283-6dfe-449a-a40b-f38be3d55200" config-ref="Database_Config1">
+			<db:sql ><![CDATA[update bank.bankdetails set accountStatus = :accountStatus, wrongPin = :wrongPin where custAccNum =:accountNum]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{"accountNum": payload.custAccNum,
+	"accountStatus": payload.AccountStatus default "active",
+	"wrongPin": payload.wrongPin
+	
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="a39e4025-6e35-4212-8268-62f49261df72" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"message": "updated successfully"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b313d4fd-cd90-4e21-a261-6f755c0e56c3" type="ANY" >
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="75b69e3f-4c58-41ba-ac37-673eae6a94cc" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+   "error": "DATABASE ERROR",
+
+   "message": error.description,
+
+   "detail": "check the database connections"
+
+} ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

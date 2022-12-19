@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd ">
+    <munit:config name="checkbalancesys-apikit-test.xml" />
+    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+        <http:request-connection host="localhost" port="8081" />
+    </http:request-config>
+    <munit:test name="post:\checkBalance-BadRequest:application\json:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [post:\checkBalance:application\json:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="post:\checkBalance:application\json:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_checkbalance_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+			<try doc:name="Try" doc:id="5beaa2be-b082-467c-92be-7c18fb583702" >
+				<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/checkBalance">
+                <http:body><![CDATA[#[{
+       "accountNum": "0123456789",
+       "atmPin": "4488"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8313febf-9536-4faa-a77c-e6889b8cd3f5" >
+						<logger level="INFO" doc:name="Logger" doc:id="82a8cf9d-6558-4b16-928d-96560f869b89" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="1eaa44ae-df5b-4f69-80c9-1697a6adcc55" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+        </munit:validation>
+    </munit:test>
+    <munit:test name="patch:\checkBalance:application\json:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\checkBalance:application\json:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="patch:\checkBalance:application\json:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_checkbalance_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5c194646-5dbf-433e-87d3-30c1ea60ec29" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="c6a66283-6dfe-449a-a40b-f38be3d55200" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "updated successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/checkBalance">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="ff305049-64f8-41c6-87bd-1935bfd70e41" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="patch:\checkBalance-Error:application\json:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\checkBalance:application\json:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="patch:\checkBalance:application\json:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_checkbalance_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="1af9d3e5-a4d6-4bde-88c3-199969e4e896" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="c6a66283-6dfe-449a-a40b-f38be3d55200" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+			<try doc:name="Try" doc:id="572a5643-21bc-4ed0-9e5c-03f41553917b" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/checkBalance">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488"
+}]]]></http:body>
+					<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2011f07a-b2b3-485e-89bd-fa1202904871" >
+						<logger level="INFO" doc:name="Logger" doc:id="68cfbe59-ff60-446c-8200-1e2d04ea59ea" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="5c17edb6-bc00-4264-ade6-d0be6e8cd1cf" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="get:\checkBalance:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [get:\checkBalance:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="get:\checkBalance:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a23dd0f1-8955-4eca-828c-6dc7dd39884f" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d450f277-ec59-4c32-8f41-47e56d4d2a5d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[{&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "active",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 6000.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;&#10;]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="GET" path="/checkBalance">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+
+{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c1974582-12e2-4cbc-a75c-3aed7b0f79fc" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+
+    </munit:test>
+
+<munit:test name="get:\checkBalance-Error:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [get:\checkBalance:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="get:\checkBalance:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="9c84241a-32d6-419e-b5e9-02064430140b" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d450f277-ec59-4c32-8f41-47e56d4d2a5d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="5d597cef-feea-45ee-85d3-ef21f173276c" >
+				<http:request config-ref="HTTP_Request_Configuration" method="GET" path="/checkBalance">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+
+{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f8db5137-4f38-472c-9878-4874621ef4ef" >
+						<logger level="INFO" doc:name="Logger" doc:id="346bc157-c144-4872-9691-f971319630db" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="ef1100a1-d845-40c6-b129-79152426afb4" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+        </munit:validation>
+    </munit:test>
+
+<munit:test name="post:\checkBalance:application\json:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [post:\checkBalance:application\json:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="post:\checkBalance:application\json:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_checkbalance_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="POST" path="/checkBalance">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="2b4ca2c0-32fd-42f1-bbba-b0b54a8db880" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+
+
+<munit:test name="post:\checkBalance-methodNotAllowed-BadRequest:application\json:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [post:\checkBalance:application\json:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="post:\checkBalance:application\json:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_checkbalance_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="047fd196-54ca-47f7-bea2-4e962fdb3c90" >
+				<http:request config-ref="HTTP_Request_Configuration" method="DELETE" path="/checkBalance">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f907d9e7-dac0-4d72-8c8c-985e47a5e3dc" >
+						<logger level="INFO" doc:name="Logger" doc:id="1f947166-12dc-4bac-bc52-bcb83d0d33fa" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7047d7c7-23e4-4404-8389-e1f241446212" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+
+
+<munit:test name="post:\checkBalance-ResourcesNotAllowed-BadRequest:application\json:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [post:\checkBalance:application\json:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="post:\checkBalance:application\json:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_checkbalance_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+			<try doc:name="Try" doc:id="777a1511-c8d2-4d1e-b5e5-d3f06008a905" >
+				<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/checkBalances">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin": "4488"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0c732d89-df7a-460c-9137-1b1a79361804" >
+						<logger level="INFO" doc:name="Logger" doc:id="b58b9c3c-ffb8-4b8d-8967-a6a9649263bd" />
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="59fa80c8-6f4d-4f73-a54a-4baec5a972e9" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+<munit:test name="post:\checkBalance-MediaTypeNotAllowed-BadRequest:application\json:checkbalancesys-config-200-application\json-FlowTest" description="Verifying functionality of [post:\checkBalance:application\json:checkbalancesys-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="checkbalancesys-main" />
+            <munit:enable-flow-source value="post:\checkBalance:application\json:checkbalancesys-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_checkbalance_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="f9aba5f0-a029-492e-bd02-23ae2600f671" >
+				<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/checkBalance">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "atmPin":"4488"
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+{"bank":"ICICI","type":"savings"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4c4d8a4b-e551-42c0-b601-8a8561baf7e9" >
+						<logger level="INFO" doc:name="Logger" doc:id="84a696e9-fff7-473f-ad58-b33d6d4a1c8b" message="#[payload]"/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8b956403-f178-4965-9392-89e374eae1e1" expression="#[payload]" is='#[MunitTools::withMediaType("application/json")]'/>
+        </munit:validation>
+    </munit:test>
+	<munit:test name="checkbalancesys-UNSUPPORTED_MEDIA_TYPE-apikit-testTest1" doc:id="019596dc-d712-4ec7-b366-128f2d6157e8" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="88c7be1b-a6d8-4fa5-9fb3-ebdfe6ef7456" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="checkbalancesys-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:UNSUPPORTED_MEDIA_TYPE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="12350958-dba9-4205-8a6e-e41157718149" >
+				<flow-ref doc:name="Flow Reference" doc:id="33ed91be-6b20-4db6-b4c7-180edfb423ed" name="checkbalancesys-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7820a33e-11cf-4e75-8e42-d9ea7f528758" >
+						<logger level="INFO" doc:name="Logger" doc:id="4f7dc63b-29f2-4194-b8e9-5a9cab4863a9" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="d9a91f90-d297-4e4f-b936-ef25ce0e1cd1" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="checkbalancesys-NOT_ACCEPTABLE-apikit-testTest" doc:id="71e0a02b-679f-4d5d-9453-fcaa828baccd" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="df1330b4-68af-46f9-b15c-a1f51ebddfb1" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="checkbalancesys-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="0b7d14bc-d4dc-4c21-9fb7-13a03ef19cb2" >
+				<flow-ref doc:name="Flow Reference" doc:id="309e24e1-a1ba-4b9b-8748-21c423cc080d" name="checkbalancesys-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="68f0c076-7b1c-4054-b79d-2d918404cff3" >
+						<logger level="INFO" doc:name="Logger" doc:id="a0f41977-0de3-4805-9584-817320c44d41" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="cc743caa-1575-439f-86ed-53b300fa9c9b" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="checkbalancesys-APIKIT:NOT_IMPLEMENTED-apikit-testTest" doc:id="f62c6bf8-f026-408a-86bd-89098ba2e598" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="23e2e7f8-e10f-4efa-a223-2a14c8f5d6d0" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="checkbalancesys-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="41b7c91e-3c33-4f06-bc48-80b8aeb60b6b" >
+				<flow-ref doc:name="Flow Reference" doc:id="ebd61dbf-f4ac-4325-9853-c4b70dac0592" name="checkbalancesys-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="93a56385-0804-4c44-8790-33c6c3f140a0" >
+						<logger level="INFO" doc:name="Logger" doc:id="4ab78a5a-7f8e-4efc-ab80-4a40d27aa817" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="da505c6d-71d7-418c-901b-f01768353a2e" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="checkbalancesys-ConsoleNOT_FOUND-apikit-testTest" doc:id="e8af6840-9c03-4556-b099-12295d9246a4" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="dc21d457-14a4-4685-80fa-bfa7cea941a2" processor="apikit:console">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="checkbalancesys-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="21143f24-d30f-4121-9b51-a75629ed8560" >
+				<flow-ref doc:name="Flow Reference" doc:id="31445e42-29a3-44e7-8c27-37a572b76fb1" name="checkbalancesys-console"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="482a06eb-2844-4bf2-9794-38297ecf9b1f" >
+						<logger level="INFO" doc:name="Logger" doc:id="09792e95-8cbc-4800-94a8-d916b61a48ea" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="0e4abc83-a04a-4c95-a9e2-0a7f7c502432" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

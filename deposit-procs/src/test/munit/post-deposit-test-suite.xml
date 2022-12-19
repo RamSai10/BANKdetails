@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<munit:config name="post-deposit-test-suite.xml" />
+	<munit:test name="post-deposit-test-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="17aaebd6-e9b0-49a0-8480-046a03e2783c" description="Test">
+		<munit:behavior >
+			<set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_deposit_application_json.json')]" doc:name="Copy_of_Set Payload" doc:id="10b33090-da4a-4272-8466-4b384056a503" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="b42415d3-8333-4fbf-9879-289cbd4129a2" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[output application/json&#10;---&#10; {&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "active",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 5500.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a25ef3e1-0fbc-4d86-9f76-cc8939caacd5" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5cd81c59-fe7c-4632-9e86-b25e967147d0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[output application/json&#10;---&#10;{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:name="Set Event" doc:id="6e9c075a-05e8-4795-8e24-1d69a8066abf">
+				<munit:payload value='#[{&#10;       "accountNum": "0123456789",&#10;       "atmPin": "4488",&#10;       "depositMoney": "500"&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow Reference" doc:id="f90f66eb-95d9-43fa-aaea-f8c9cd485096" name="deposit-ImpleFlow" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="e51c85fb-fb6d-4367-91a5-28f4600ea08d" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+<munit:test name="post-deposit-fail-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="810f7be9-a4d7-4050-b863-a580236de9de" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="0f81e550-525b-47cd-b150-57b4765dd74e" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 5500.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="39d0f384-817f-4e5b-9793-db9fd45d06ec" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4488",&#10;&#10;       "depositMoney": null&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\deposit:application\json:depositeprocs-config" doc:id="33391d3b-0737-4ebc-a780-0127e4084c77" name="post:\deposit:application\json:depositeprocs-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="2f41a962-01bc-4ebe-85ee-1510113d11b8" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="post-deposit-wrongPin-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="e9e4360e-b1f1-4adc-8ef9-c2f1f781b669" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a5d6a8cf-1d1b-4adb-8001-17b66a83962c" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 5500.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="674ad502-daac-4a9d-b13f-0ee0483f0165" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="HTTP_Request_configuration" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="315e0927-7cce-4ad5-903b-05b72b70cecd" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "depositMoney": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\deposit:application\json:depositeprocs-config" doc:id="3c176a89-3c08-4b3b-8948-053195f29b47" name="post:\deposit:application\json:depositeprocs-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="21196bf0-90fc-4d27-999f-907dcbf5d472" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="post-deposit-accountBlocked-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="c7d7b0a4-ea23-45af-96f8-f285a2e284e4" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="46ac28bd-8b15-4aae-a1e9-7920dc5568c3" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;&#10;  "atmPin": "4488",&#10;&#10;  "accountType": "savings",&#10;&#10;  "ifscCode": "4488",&#10;&#10;  "wrongPin": "3",&#10;&#10;  "accountStatus": "active",&#10;&#10;  "custAccNum": "0123456789",&#10;&#10;  "contact": "9887472456",&#10;&#10;  "mailId": "thiru@gmail.com",&#10;&#10;  "bankName": "ICICI",&#10;&#10;  "transactionTimeStamp": "2021-12-16",&#10;&#10;  "totalBalance": 5500.000000000,&#10;&#10;  "custName": "Thirupathi",&#10;&#10;  "branchName": "ICICI"&#10;&#10;}&#10;&#10;&#10;&#10;]' />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="e944c9e1-ff10-4a88-80f3-b3d1ffef1eb1" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a383784a-b1cb-48cc-bde6-86ab8414362f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="376ab001-1f88-4f82-aa41-63eacb097d7e" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "depositMoney": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\deposit:application\json:depositeprocs-config" doc:id="05d2fe06-b614-47a6-96ec-3a927d0319a7" name="post:\deposit:application\json:depositeprocs-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="925d6df0-05c5-48c5-bc2c-ecd9586591d3" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="post-deposit-NullPayload-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="c0a729de-50ba-45b6-a077-5a9340a59f63" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="b6efbae8-909e-4ef8-a8da-6c080c1ee9c0" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[null]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="d128267d-3a54-4b1c-8050-09da13d34626" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456000",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "depositMoney": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+
+
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\deposit:application\json:depositeprocs-config" doc:id="9ae93f21-6868-425b-9eef-de8ab8eef22d" name="post:\deposit:application\json:depositeprocs-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="0f256d42-7c53-41e1-a941-8c6acd25e2e1" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="post-deposit-HTTPRequestError-test-suiteTest" doc:id="5e61feba-f17f-4d42-b4f5-dc29d9ce4fb6">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="http:request" doc:id="0a823489-ab07-490e-acfb-f21da02ea20f" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APP:HTTP_REQUEST" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="1614078c-4bad-43c1-83d3-8abc25183cc4" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a383784a-b1cb-48cc-bde6-86ab8414362f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APP:HTTP_REQUEST" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="ce5d2df0-d13b-486d-81cb-461ec002e9d5" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5cd81c59-fe7c-4632-9e86-b25e967147d0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APP:HTTP_REQUEST" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f5d0f470-3c96-40e9-93a3-0ef4fb038bed" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7b11c44c-c7bf-43d6-af98-65bfd6592b39" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APP:HTTP_REQUEST" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="2420a941-49e2-457e-b3c9-6ce3da99037c" >
+				<flow-ref doc:name="Flow Reference" doc:id="73526fa7-2c7f-43bb-a425-49b35837ffd1" name="deposit-ImpleFlow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="27db2296-9957-4d3e-b090-9cb73ee5708c" >
+						<logger level="INFO" doc:name="Logger" doc:id="2293fcb6-3392-4495-8147-85835ea45c98" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="41c091a8-d196-43de-9fdb-5f20acefbc37" expression="#[payload.message]" is='#[MunitTools::equalTo("HTTP Request Error")]'/>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="post-DepositEmailError-test-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="36f97155-25a5-4901-9d4a-eb382979f2c5" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="94f0e2a6-e208-4236-b97c-e365d13ae5f7" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 5500.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="fd6b7514-72c6-408c-be19-965b919f5a74" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="5cd81c59-fe7c-4632-9e86-b25e967147d0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="21c9b3c7-8123-4225-9b97-e85c8017135a" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fabc35d8-8834-4959-a785-c87dab091ab6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="Any" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="2120c39f-358e-4acb-81bb-af088219abb9" >
+				<munit:payload value='#[{
+&#10;       "accountNum": "0123456789",
+&#10;       "atmPin": "4488",
+&#10;       "depositMoney": "500"
+&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\deposit:application\json:depositeprocs-config" doc:id="c0a1e93c-da1e-4a1d-99f7-9198ce135a02" name="post:\deposit:application\json:depositeprocs-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="2e299157-1218-419c-a82f-1a105145a278" expression="#[payload.Error]" is='#[MunitTools::equalTo("error in email")]'/>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="post-deposit-accountBlockedEmail-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="69adf0d8-c2fa-4b96-a9a9-ae2a3812648c" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="658c17b6-a89d-4d71-ae06-6b1f03d8e942" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;&#10;  "atmPin": "4488",&#10;&#10;  "accountType": "savings",&#10;&#10;  "ifscCode": "4488",&#10;&#10;  "wrongPin": "3",&#10;&#10;  "accountStatus": "active",&#10;&#10;  "custAccNum": "0123456789",&#10;&#10;  "contact": "9887472456",&#10;&#10;  "mailId": "thiru@gmail.com",&#10;&#10;  "bankName": "ICICI",&#10;&#10;  "transactionTimeStamp": "2021-12-16",&#10;&#10;  "totalBalance": 5500.000000000,&#10;&#10;  "custName": "Thirupathi",&#10;&#10;  "branchName": "ICICI"&#10;&#10;}&#10;&#10;&#10;&#10;]' />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="2b8b92e2-b34c-4edc-992b-480d55e0d286" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a383784a-b1cb-48cc-bde6-86ab8414362f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="9a627aeb-2374-4c5b-8ff6-cd7cbd8250fa" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="401b2ae1-fe88-4576-aeab-a8dfd5747fe3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="eb15de44-b3eb-4c2c-b78a-0617aefb85f1" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "depositMoney": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\deposit:application\json:depositeprocs-config" doc:id="411be340-1133-4d4b-b9ba-7ebdc1aa728b" name="post:\deposit:application\json:depositeprocs-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="3cc756ce-4e32-4360-8b7b-58d075dd487f" expression="#[payload.Error]" is='#[MunitTools::equalTo("error in email")]'/>
+		</munit:validation>
+	</munit:test>
+	
+	
+		<munit:test name="post-deposit-wrongPinEmail-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="ecf2e3fc-7394-4120-a4cd-309bb9cb09dd" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="571d386a-05e5-404d-be58-aee2d61f7c6a" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 5500.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5e5c30cc-1bdd-496b-ae13-4c0f5de39dd6" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="HTTP_Request_configuration" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="23246da5-5d44-4e75-a14a-6c00f4c476e7" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0735db1b-4e35-4bb5-851f-e8dfd5779598" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="780ff6c6-550e-4a6a-8b96-64bd98dab937" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4485",&#10;&#10;       "depositMoney": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\deposit:application\json:depositeprocs-config" doc:id="861248ae-935e-4d3e-a35f-1163e86d9154" name="post:\deposit:application\json:depositeprocs-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="01856ba3-cede-4fea-894b-e9851528ea82" expression="#[payload.Error]" is='#[MunitTools::equalTo("error in email")]'/>
+		</munit:validation>
+	</munit:test>
+	
+	
+	<munit:test name="post-deposit-InActive-suite-post:\deposit:application\json:depositeprocs-configTest" doc:id="4598bd08-556f-4696-9234-ad475bf77440" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="293f0115-9fc5-4a00-80fb-27e0f018c73d" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="15d86677-afc9-48de-be5b-d1610c4c198c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "InActive",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 5500.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;&#10;]' />
+				</munit-tools:then-return>
+			
+
+</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="0e1ce87a-2256-46fb-8838-91bb8dcc68d9" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456789",&#10;&#10;       "atmPin": "4488",&#10;&#10;       "depositMoney": "500"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank: "ICICI", "type": "savings"}}]' />
+			
+
+
+
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\deposit:application\json:depositeprocs-config" doc:id="a4b22d3a-4568-4b51-9a2b-5205661ea0ae" name="post:\deposit:application\json:depositeprocs-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c1abeed0-da6f-4b11-8440-407b68c0af0d" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	
+</mule>

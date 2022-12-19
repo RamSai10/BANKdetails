@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="new-test-suite.xml" />
+	<munit:test name="new-test-suite-bank_projectFlowTest" doc:id="03a00b16-838d-4e69-aab5-f896dd11bde2" description="Test">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to bank_projectFlow" doc:id="9fd926eb-6bac-44a0-abac-607123f5f806" name="bank_projectFlow"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="new-test-suite-createaccount-mainTest" doc:id="41aba0af-8741-4f0a-8820-b35787c2d345" description="Test">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to createaccount-main" doc:id="810dde49-6cf4-4e7f-bedb-4e72615ae45d" name="createaccount-main"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="new-test-suite-createaccount-consoleTest" doc:id="ec3c53f4-5c46-4f4c-b43a-dea8639fda13" description="Test">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to createaccount-console" doc:id="510eb5a7-5ce9-49d6-b39d-64aa58b01bab" name="createaccount-console"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="new-test-suite-post:\createAccount:application\json:createaccount-configTest" doc:id="fdacab67-f2c1-44f7-977e-f30e83ae29cc" description="Test">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to post:\createAccount:application\json:createaccount-config" doc:id="9e7a7f1d-133d-4fbd-8191-3dbe27b34d6d" name="post:\createAccount:application\json:createaccount-config"/>
+		</munit:execution>
+	</munit:test>
+
+
+</mule>

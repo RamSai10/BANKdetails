@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd ">
+    <munit:config name="unblock-apikit-test.xml" />
+    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+        <http:request-connection host="localhost" port="8081" />
+    </http:request-config>
+    <munit:test name="put:\unblock:application\json:unblock-config-200-application\json-FlowTest" description="Verifying functionality of [put:\unblock:application\json:unblock-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="unblock-main" />
+            <munit:enable-flow-source value="put:\unblock:application\json:unblock-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/put_unblock_application_json.json')]" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="PUT" path="/unblock">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "user": "admin",
+       "password": "admin",
+       "bank" : "ICICI"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b328a38e-7f73-498a-87b6-d4d1e82d2b13" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    <munit:test name="get:\accountDetails:unblock-config-200-application\json-FlowTest" description="Verifying functionality of [get:\accountDetails:unblock-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="unblock-main" />
+            <munit:enable-flow-source value="get:\accountDetails:unblock-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="7022c19a-6bb4-4c75-9679-e5154061d3b3" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="830517d8-df18-4dd9-a951-24bf4f0e258f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[[{&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "active",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 6000.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;&#10;]]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="GET" path="/accountDetails">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "user": "admin",
+       "password": "admin",
+       "bank" : "ICICI"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+{"accountNum": "0123456789"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7b2edeac-3ef9-44ce-9ea6-72ba3f40d76b" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="get:\accountDetails-Error:unblock-config-200-application\json-FlowTest" description="Verifying functionality of [get:\accountDetails:unblock-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="unblock-main" />
+            <munit:enable-flow-source value="get:\accountDetails:unblock-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="7e3af2e0-7e7f-4ab9-b373-9d03bfc67ba8" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="830517d8-df18-4dd9-a951-24bf4f0e258f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="4d84cca1-f760-424f-9ea4-f1b956bd3a0b" >
+				<http:request config-ref="HTTP_Request_Configuration" method="GET" path="/accountDetails">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "user": "admin",
+       "password": "admin",
+       "bank" : "ICICI"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[output application/json
+---
+{"accountNum": "0123456789"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="475dfc2c-11f3-4983-b7d4-452548d8d5bb" >
+						<logger level="INFO" doc:name="Logger" doc:id="9968b6f7-91fb-43cb-ac75-79de6d2f3db7" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="e0b4c118-3f67-410d-95b0-a48e73ccc261" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="patch:\unblock:application\json:unblock-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\unblock:application\json:unblock-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="unblock-main" />
+            <munit:enable-flow-source value="patch:\unblock:application\json:unblock-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_unblock_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="2557576d-a5e8-4d9e-a17e-8b2ff8be3f52" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="e17bed50-0aff-403f-a730-9edb3263da36" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message":"updated successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/unblock">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "user": "admin",
+       "password": "admin",
+       "bank" : "ICICI"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+        </munit:execution>
+        <munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="797c0e12-d2da-45f4-97a8-d86e8a9542a9" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="patch:\unblock-Error:application\json:unblock-config-200-application\json-FlowTest" description="Verifying functionality of [patch:\unblock:application\json:unblock-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="unblock-main" />
+            <munit:enable-flow-source value="patch:\unblock:application\json:unblock-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/patch_unblock_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="70411c46-b449-448e-9fee-e8eb8ea34893" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="e17bed50-0aff-403f-a730-9edb3263da36" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+			<try doc:name="Try" doc:id="5ea87484-2419-4a20-b668-82eff76df677" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/unblock">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "user": "admin",
+       "password": "admin",
+       "bank" : "ICICI"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f7d300d6-fee6-44b7-89ae-f531bac0f9da" >
+						<logger level="INFO" doc:name="Logger" doc:id="7ceccb4d-6a4a-4165-81c8-fdd2ca250c35" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="92ba1d98-4d84-4e07-bc53-a0c55b75d8cd" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+        </munit:validation>
+    </munit:test>
+    
+     <munit:test name="put:\unblock-BadRequest:application\json:unblock-config-200-application\json-FlowTest" description="Verifying functionality of [put:\unblock:application\json:unblock-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="unblock-main" />
+            <munit:enable-flow-source value="put:\unblock:application\json:unblock-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/put_unblock_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="385810a7-cc52-4d41-8259-e35371526024" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PUT" path="/unblock">
+                <http:body><![CDATA[#[{
+       "accountNum": "0123456789",
+       "user": "admin",
+       "password": "admin",
+       "bank" : "ICICI"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="fe9ab96c-30b8-4c5d-a2b9-2e1ef475d66d" >
+						<logger level="INFO" doc:name="Logger" doc:id="602c2c5b-15fd-4a04-af3d-2f52552ea9ce" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="ac83fa60-d28f-47f4-b145-ee609aafd859" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+     <munit:test name="put:\unblock-MethodNotAllowed:application\json:unblock-config-200-application\json-FlowTest" description="Verifying functionality of [put:\unblock:application\json:unblock-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="unblock-main" />
+            <munit:enable-flow-source value="put:\unblock:application\json:unblock-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/put_unblock_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="9795d20d-9224-4277-b9a6-d9af9f772a76" >
+				<http:request config-ref="HTTP_Request_Configuration" method="DELETE" path="/unblock">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "user": "admin",
+       "password": "admin",
+       "bank" : "ICICI"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="18a189d3-d983-4705-8ab5-08dd44692327" >
+						<logger level="INFO" doc:name="Logger" doc:id="f417c072-4642-4834-b893-d75611a6fe0e" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b8b7e4e1-8ceb-41f1-bca2-6bc282d55294" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+     <munit:test name="put:\unblock-ResourcesNotFound:application\json:unblock-config-200-application\json-FlowTest" description="Verifying functionality of [put:\unblock:application\json:unblock-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="unblock-main" />
+            <munit:enable-flow-source value="put:\unblock:application\json:unblock-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/put_unblock_application_json.json')]" />
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="870cdfcc-67f3-4d80-8ec0-2b490e555bac" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PUT" path="/unblockss">
+                <http:body><![CDATA[#[output application/json
+---
+{
+       "accountNum": "0123456789",
+       "user": "admin",
+       "password": "admin",
+       "bank" : "ICICI"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="70ceaab1-df5e-4cf1-ba18-cf4d54e60808" >
+						<logger level="INFO" doc:name="Logger" doc:id="f7816c5b-9851-4580-b9b2-1065efcb3190" message="#[payload]"/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="936aedb1-6d9d-4726-9882-af1198e0b2b0" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    <munit:test name="withdraw-UNSUPPORTED_MEDIA_TYPE-apikit-testTest1" doc:id="22d5b719-919d-484f-bc4c-55a0ba8f38b7" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5e63c12c-c447-4c0d-96c7-2c909612f02b" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="unblock-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:UNSUPPORTED_MEDIA_TYPE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="d00e21a0-fb9a-4264-8517-c3be35b3efaa" >
+				<flow-ref doc:name="Flow Reference" doc:id="5822bf49-d1a3-47e3-9c0e-590ada6543f8" name="unblock-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f11e73a0-6f65-4d7a-bdbc-287d08078481" >
+						<logger level="INFO" doc:name="Logger" doc:id="a5c60b23-f1a6-4367-8bbb-d5d3c6f744b3" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="e579469d-cb47-45cb-8ddd-fb41ccc7ab20" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="unblock-NOT_ACCEPTABLE-apikit-testTest" doc:id="a065066c-93fa-45d5-bbe8-a220cb891639" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="00d5e690-2d8b-4b9f-9176-a38064d58e1d" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="unblock-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="474e28a1-c719-46c5-8499-d362d17cd342" >
+				<flow-ref doc:name="Flow Reference" doc:id="0e74e500-4cb8-4c15-85ef-904fe617588b" name="unblock-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="fe637a33-423b-493d-8ad8-3da403c3d254" >
+						<logger level="INFO" doc:name="Logger" doc:id="ba22b7ef-6b15-43ea-931f-f08bcb920d61" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c9bd0c35-2ffc-4a3b-847e-4806dcd2df6b" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="unblock-APIKIT:NOT_IMPLEMENTED-apikit-testTest" doc:id="44792b4e-3945-4ac1-9259-b6edc3404d72" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="d495cb08-634f-4879-a2c3-a658d7920321" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="unblock-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="88068e8b-a8d7-42ba-a3dc-f08bc84b1a65" >
+				<flow-ref doc:name="Flow Reference" doc:id="4925c916-f8a3-44b9-b83c-4a8c3135e85c" name="unblock-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2ff453a4-880d-4600-afa5-7241516f4f90" >
+						<logger level="INFO" doc:name="Logger" doc:id="1fbd77ff-4ad9-4b4e-a219-be806eea2a6f" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="15adcff9-718e-48d1-98d7-89c218cc6bd6" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="unblock-ConsoleNOT_FOUND-apikit-testTest" doc:id="301d7244-d19b-4ea0-b68d-670623850e35" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="8d47c8ca-0daa-4ab7-8a6c-fb5d0509f51e" processor="apikit:console">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="unblock-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="5156c8dd-b92d-4ac7-9659-56b977a719ab" >
+				<flow-ref doc:name="Flow Reference" doc:id="8637ce01-84ff-4bbe-aec2-a81f63d99241" name="unblock-console"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="1b68e3d7-305f-4c06-9556-e25794c25b40" >
+						<logger level="INFO" doc:name="Logger" doc:id="b1cb25a7-13ca-4509-81e7-ccbdcd217c52" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="d0b9a5d4-9b60-4af7-b0cf-2a4e0b65b2ec" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+    
+    
+</mule>

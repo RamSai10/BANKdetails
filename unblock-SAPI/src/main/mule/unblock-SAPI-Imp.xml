@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="FetchingDetails-impFlow" doc:id="dce427bf-787e-4e5e-9eee-a00e87d11b7e" >
+		<db:select doc:name="Select" doc:id="830517d8-df18-4dd9-a951-24bf4f0e258f" config-ref="Database_Config1" >
+			<db:sql ><![CDATA[select * from bank.bankdetails where custAccNum =:accountNum]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"accountNum": attributes.queryParams.accountNum
+	
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="005bb836-6619-4630-9c04-f65bba237a7c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload reduce($$++$)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2cb8b879-9c28-4a6e-a55e-6b1930125bd7" type="ANY" >
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="b70b8216-efec-436f-891c-7ca49ec94250" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+   "error": "DATABASE ERROR",
+
+   "message": error.description,
+
+   "detail": "check the database connections"
+
+} ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="wrongpinUpdateSys-impFlow" doc:id="07eab403-6a03-4e8d-b6b8-86d6c190106f" >
+		<db:update doc:name="Update" doc:id="e17bed50-0aff-403f-a730-9edb3263da36" config-ref="Database_Config1" >
+			<db:sql ><![CDATA[update bank.bankdetails set accountStatus = :accountStatus, wrongPin = :wrongPin where custAccNum =:accountNum]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{"accountNum": payload.custAccNum,
+	"accountStatus": payload.AccountStatus default "active",
+	"wrongPin": payload.wrongPin
+	
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="7acdafe2-595a-4d76-b449-b46ad03a34cc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"message": "updated successfully"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b2244897-064c-4f02-b16b-9b9b1396052e" type="ANY" >
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="74f3a969-e02e-4e7c-9dca-f3a600186901" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+   "error": "DATABASE ERROR",
+
+   "message": error.description,
+
+   "detail": "check the database connections"
+
+} ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

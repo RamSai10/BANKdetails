@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<http:request-config name="HTTP_Request_configuration_checkBalanceSAPI" doc:name="HTTP Request configuration" doc:id="68354e1b-cf43-4674-9065-477766aea825" >
+		<http:request-connection host="localhost" port="8083" >
+		</http:request-connection>
+	</http:request-config>
+	<secure-properties:config name="Secure_Properties_Config1" doc:name="Secure Properties Config" doc:id="30a5bcf5-bd85-4cc6-8bf5-56fc99bfbe51" file="dev.yaml" key="mulesoft" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="63df9745-f03e-4a71-9a52-3decaee370eb" file="{env}.yaml" />
+	<global-property doc:name="Global Property" doc:id="90619f78-77a8-4358-bef6-e9c911654a39" name="env" value="dev1" />
+	<flow name="checkBalance-ImpleFlow" doc:id="4fb0725d-c27f-4aa2-a9f3-0cad0817d1ca" >
+		<set-variable value='#[output application/json&#10;---&#10;&#10;payload]' doc:name="Copy_of_Set Variable" doc:id="760c4cf9-c492-4378-8aba-08710b81faaf" variableName="a" />
+		<http:request method="GET" doc:name="Request" doc:id="195b4aea-2322-4994-ab83-61c03b105179" path="/api/checkBalance" config-ref="HTTP_Request_configuration_checkBalanceSAPI" responseTimeout="50000">
+			<error-mapping targetType="INVALID:REQUEST" />
+			<http:query-params ><![CDATA[#[{
+	"accountNum": payload.accountNum
+	
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="d093d45f-8c08-436b-81e8-d7d319080354" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var a = vars.a
+---
+ (if (payload != null )
+{
+                        (if (payload.accountStatus == "active")
+                        {
+                                (if (payload.wrongPin <= 2)
+                                {
+                                    (if (payload.atmPin == a.atmPin)         
+                                        {
+                                            "totalBalance" : payload.totalBalance,
+                                            "wrongPin":0,
+                                             "custAccNum" : payload.custAccNum,
+                                            "hint": "Success"
+                                        }
+                                
+                                        else 
+                                        {"error": "Invalid Pin, try with correct pin",
+                                        "wrongPin" : payload.wrongPin + 1,
+                                        "message" : "Login Attempt Failed .Attempts left 2" ,
+                                        "custAccNum" : payload.custAccNum,
+                                        "accountStatus": payload.accountStatus,
+                                        "hint": "InvalidPin"
+                                        })
+                                }              
+                                else
+                                {"error": "retry EXausted",
+                                    "message": "Maximum Attempts reached .Your Account "
+                                    ++ payload.custAccNum   ++ "is temporarily blocked",
+                                    "accountStatus": "InActive",
+                                    "wrongPin": payload.wrongPin,
+                                     "custAccNum" : payload.custAccNum,
+                                    "hint": "InvalidPin"
+                                })
+
+
+                        } 
+                       else 
+                       {
+                           "errorMsgAccountStatus" : "Account  " ++ payload.custAccNum ++ "  temporarily blocked. Please visit 
+                                nearest Branch" , 
+                            "hint" : "errorResponse"
+                        })
+}
+else
+{ 
+    "errorMsgAccountStatus" : "Account does not exist .. Please Enter Valid Account Number",
+    
+"hint" : "errorResponse"
+})            ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="b9adc57a-f7b3-4aa4-83ac-30c3ec4bb6ed" name="checkBls-Imp-prcsFlow"/>
+		<ee:transform doc:name="Transform Message" doc:id="09742bd4-dee7-4feb-b63b-dbe668025a97" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+ payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="Global-Error-HandlerError_Handler" />
+	</flow>
+</mule>

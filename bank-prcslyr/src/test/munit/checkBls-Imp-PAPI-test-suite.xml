@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="checkBls-Imp-PAPI-test-suite.xml" />
+	<munit:test name="checkBls-SuccessResponse-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="088f8c40-3e20-4916-8a3f-b8f26767e937" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="658a5b00-9847-4d99-b13f-fc3a1f5da73f" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;  "atmPin": "4488",&#10;  "accountType": "savings",&#10;  "ifscCode": "4488",&#10;  "wrongPin": 0,&#10;  "accountStatus": "active",&#10;  "custAccNum": "0123456789",&#10;  "contact": "9887472456",&#10;  "mailId": "thiru@gmail.com",&#10;  "bankName": "ICICI",&#10;  "transactionTimeStamp": "2021-12-16",&#10;  "totalBalance": 6000.000000000,&#10;  "custName": "Thirupathi",&#10;  "branchName": "ICICI"&#10;}&#10;&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="6303ac57-fe89-4835-ae99-99904ed2420f" >
+				<munit:payload value='#[{&#10;       "accountNum": "0123456789",&#10;       "atmPin": "4488"&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="33d149f4-4d5a-4620-877d-55cb54eae01e" name="checkBalance-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="92def96b-61ab-4552-884f-8d12975c5525" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+<munit:test name="checkBls-AccountNumbeeWrong-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="586a01a7-13a8-4f70-b9ba-c844ac03020f" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="52a43eca-afd1-4d73-8b0d-eb81f46ba4fc" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[null]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="228d867b-7f38-4034-892a-b9fef2a4d0c2" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456783",&#10;&#10;       "atmPin": "4488"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="a60f3368-95e4-455e-b62a-1f55b3fede4c" name="checkBalance-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7181fd3c-f0e7-47df-9d98-330b53121e44" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+
+
+<munit:test name="checkBls-InvalidPin-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="95e2286e-5ee8-4291-8845-fafd03edc4b4" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="4efd8034-596f-4f39-96c4-415691cc0783" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 6000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="518802bb-7aa0-4b53-8344-f5edf65e454b" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="cc9489ed-afe8-4481-bdf0-4d614dd1920f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "updated successfully"}
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="416ed0f4-ec3a-4137-8ef6-058d2bb58730" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456783",&#10;&#10;       "atmPin": "4482"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="a4e860ed-5170-4786-9fee-d79d12011f0f" name="checkBalance-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="0bb10594-2050-4a64-93fe-35e642d6420a" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	
+	
+	<munit:test name="checkBls-Inactive-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="c1990a1d-b867-44db-8c65-a88af31fffcf" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f7c87308-74a1-4d92-b136-ae4b4c7c9118" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 3,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 6000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="52c0d909-ba32-403d-871e-41b6fccc650c" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fe60570b-4f47-4df7-88b3-2b2833625b1c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "updated successfully"}
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="41147f96-5cd1-4d72-907a-199503f18d9b" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456783",&#10;&#10;       "atmPin": "4482"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="93474d2a-9504-4b34-8f44-3d3b771d6f2f" name="checkBalance-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="6c04496e-c10c-41a5-969e-993dc338b024" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="checkBls-InvalidPin-EmailError-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="a2847953-b264-4811-8212-d93f989da576" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="b3d9b2b6-79eb-47d1-b312-8422d3699fb1" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 6000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="ae13b7d7-ab16-4c16-8362-92a4c5cc4770" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="cc9489ed-afe8-4481-bdf0-4d614dd1920f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "updated successfully"}
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="667b3fe9-0f15-4fe2-b8d2-4d651e1287ff" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d43f4f07-49ed-433b-a696-50d8c5447258" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="e31115a2-09d6-494b-8197-97e0910835be" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456783",&#10;&#10;       "atmPin": "4482"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="f845cc1a-ea49-46c6-815b-cedd10d94d6a" name="checkBalance-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="35de57d6-0156-454e-b793-5772acc4740a" is='#[MunitTools::equalTo("error in email connection")]' expression="#[payload.error]"/>
+		</munit:validation>
+	</munit:test>
+	
+	
+	<munit:test name="checkBls-Inactive-EmailError-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="32323daa-5328-4eec-9441-20967b6d2b02" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="835386ee-57af-4306-9c56-53ee8f54261a" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 3,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 6000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Copy_of_Mock when" doc:id="fd9ef3ce-caaf-4db6-a201-bc8c7e93c0f9" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="fe60570b-4f47-4df7-88b3-2b2833625b1c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[{"message": "updated successfully"}&#10;&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="bb97e684-e1e1-4de9-8ac1-9e5ef3680946" processor="email:send">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="1becb674-72ee-48de-94e9-7b7845a20731" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		
+
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="bec21614-0c95-44c7-a80f-b9aad0300c01" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456783",&#10;&#10;       "atmPin": "4482"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			
+</munit:set-event>
+			<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="591ddee1-b827-481a-802c-a85df9651072" name="checkBalance-ImpleFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="0e3e0988-a579-42aa-9a97-53b3d13fd845" is='#[MunitTools::equalTo("error in email connection")]' expression="#[payload.error]"/>
+		</munit:validation>
+	</munit:test>
+
+
+<munit:test name="checkBls-HttpError1-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="2c065d49-7083-4a96-987d-78416c965943" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="bde8b4a5-a622-4063-9f04-1d4837c42361" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="INVALID:REQUEST" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Copy_of_Set Event" doc:id="63977071-e6f3-40c5-9532-9aa85a32826a">
+				<munit:payload value='#[{&#10;       "accountNum": "0123456789",&#10;       "atmPin": "4488"&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			</munit:set-event>
+			<try doc:name="Try" doc:id="4afba48c-ce8c-4e80-a88f-8cbbc1dfaba0" >
+				<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="ecf35244-0cbf-4826-b792-f78f6cb7a891" name="checkBalance-ImpleFlow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9a5bc816-6583-4a07-9347-35d5baefdaef" >
+						<logger level="INFO" doc:name="Logger" doc:id="cd9a1137-85fc-4658-90b3-51c9b011d102" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		
+</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="ab014473-da4d-44cd-b2bf-be1d1dbf773e" is='#[MunitTools::equalTo("error in http request")]' expression="#[payload.message]"/>
+		</munit:validation>
+	</munit:test>
+<munit:test name="checkBls-InvalidPin-HttpError-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="e5247e19-ba7f-4552-bc5e-987846be023c" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="26067da2-37f2-4842-85e4-b1c2fa450c66" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 0,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 6000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="462ba8ce-9537-4283-92c9-1ba4c2ca803a" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="cc9489ed-afe8-4481-bdf0-4d614dd1920f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="INVALID:REQUEST" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="f41e0091-6452-42d6-8ff5-5f4d640d7cbf" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456783",&#10;&#10;       "atmPin": "4482"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			
+</munit:set-event>
+			<try doc:name="Try" doc:id="253b2249-9d71-42e6-960a-9c389b06f575" >
+				<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="ebe48906-bb3a-4068-b421-b76d3287500d" name="checkBalance-ImpleFlow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="e5997fd0-db2f-4abc-945b-d7fbc5f8235e" >
+						<logger level="INFO" doc:name="Logger" doc:id="9f669aed-17b8-493d-b4c5-56bbcc713555" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		
+</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="3ad7ed6c-5fdf-4b2d-8c96-b37c714e7601" is='#[MunitTools::equalTo("error in http request")]' expression="#[payload.message]"/>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="checkBls-Inactive-HttpError-Imp-PAPI-test-suite-checkBalance-ImpleFlowTest" doc:id="408eeb08-f1cd-4524-8dc6-b979b52856dd" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="b9ddad78-dc7c-4f57-86f8-383ddd46263c" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="195b4aea-2322-4994-ab83-61c03b105179" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{
+&#10;  "atmPin": "4488",
+&#10;  "accountType": "savings",
+&#10;  "ifscCode": "4488",
+&#10;  "wrongPin": 3,
+&#10;  "accountStatus": "active",
+&#10;  "custAccNum": "0123456789",
+&#10;  "contact": "9887472456",
+&#10;  "mailId": "thiru@gmail.com",
+&#10;  "bankName": "ICICI",
+&#10;  "transactionTimeStamp": "2021-12-16",
+&#10;  "totalBalance": 6000.000000000,
+&#10;  "custName": "Thirupathi",
+&#10;  "branchName": "ICICI"
+&#10;}
+&#10;
+&#10;]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="3d0a92d2-cf71-4dd3-ae2c-45ea7933a7bc" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fe60570b-4f47-4df7-88b3-2b2833625b1c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="INVALID:REQUEST" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="1cb6172d-080e-44be-860f-588435e84a0a" >
+				<munit:payload value='#[{&#10;&#10;       "accountNum": "0123456783",&#10;&#10;       "atmPin": "4482"&#10;&#10;}]' />
+				<munit:attributes value='#[{queryParams:{bank:"ICICI","type":"savings"}}]' />
+			
+</munit:set-event>
+			<try doc:name="Try" doc:id="f873e5fd-e55b-473b-a3e2-90d7a7d97281" >
+				<flow-ref doc:name="Flow-ref to checkBalance-ImpleFlow" doc:id="8f3dba77-3bdf-4480-82d6-ba6ac625c509" name="checkBalance-ImpleFlow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6e7374e3-d953-470f-bd41-4e582e57ead2" >
+						<logger level="INFO" doc:name="Logger" doc:id="c8041002-58b3-4764-9c6f-2c38aa8a7c91" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		
+</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="46ae9a5a-8d03-4ecd-8386-e1ca5f041865" is='#[MunitTools::equalTo("error in http request")]' expression="#[payload.message]"/>
+		</munit:validation>
+	</munit:test>
+</mule>

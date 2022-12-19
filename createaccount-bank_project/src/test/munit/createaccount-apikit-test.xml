@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd ">
+    <munit:config name="createaccount-apikit-test.xml" />
+    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+        <http:request-connection host="localhost" port="8081" />
+    </http:request-config>
+    <munit:test name="post:\createAccountBadRequest:application\json:createaccount-config-201-application\json-FlowTest" description="Verifying functionality of [post:\createAccount:application\json:createaccount-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="createaccount-main" />
+            <munit:enable-flow-source value="post:\createAccount:application\json:createaccount-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_createaccount_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5dd40bfc-fc82-4523-935b-9313d09a10b7" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="88cef6fd-2ae0-4d30-97e8-b3796104690d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;  "message":"inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="788c1f01-dc91-4879-8e53-24e63080b67f" >
+				<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/createAccount">
+                <http:body><![CDATA[#[{
+    "accountNum" : "4545454547",
+    "atmPin" : "4444",
+   
+    "mailId" : "lakshman@gmail.com",
+    "contact" : "8623833990"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","branchName":"ICICI","type":"savings","customerName":"Renuka"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c0b390ac-7167-43d4-8931-730ba6b0dac6" >
+						<logger level="INFO" doc:name="Logger" doc:id="a0b87ed3-7ecd-4689-b876-54cbcaaf1921" message="#[payload]"/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="9049b845-2b4a-4e38-b084-ceb9b78e864a" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="post:\createAccountMethodError:application\json:createaccount-config-201-application\json-FlowTest" description="Verifying functionality of [post:\createAccount:application\json:createaccount-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="createaccount-main" />
+            <munit:enable-flow-source value="post:\createAccount:application\json:createaccount-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_createaccount_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="45b16e75-83e6-488c-9061-02279e8d3912" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="88cef6fd-2ae0-4d30-97e8-b3796104690d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;  "message": " inserted successfully"}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+			<try doc:name="Try" doc:id="d608d3dd-edb2-4fa5-ae3b-1656eff15aab" >
+				<http:request config-ref="HTTP_Request_Configuration" method="PATCH" path="/createAccount">
+                <http:body><![CDATA[#[{
+    "accountNum" : "4545454548",
+    "atmPin" : "4444",
+    "ifscCode" : "4321",
+    "mailId" : "lakshman@gmail.com",
+    "contact" : "8623833990"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","branchName":"ICICI","type":"savings","customerName":"Renuka"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="29494b73-68db-4a19-84d7-b95da392e4b7" >
+						<logger level="INFO" doc:name="Logger" doc:id="a6608788-74f1-4554-8030-2851ee66c443" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="5ffcb00a-d1ab-490c-a855-107a736a7cd9" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="post:\createAccountSuccess:application\json:createaccount-config-201-application\json-FlowTest" description="Verifying functionality of [post:\createAccount:application\json:createaccount-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="createaccount-main" />
+            <munit:enable-flow-source value="post:\createAccount:application\json:createaccount-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_createaccount_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f04d14de-6319-4976-99c4-30ac0052a537" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="88cef6fd-2ae0-4d30-97e8-b3796104690d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"&#10;&#10;}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="POST" path="/createAccount">
+                <http:body ><![CDATA[#[output application/json
+---
+{
+    "accountNum" : "4545454584",
+    "atmPin" : "4444",
+    "ifscCode" : "4321",
+    "mailId" : "lakshman@gmail.com",
+    "contact" : "8623833990"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","branchName":"ICICI","type":"savings","customerName":"singh"}]]]></http:query-params>
+            </http:request>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="aeacd5c0-33ae-4145-8886-7add6c2049f8" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    <munit:test name="post:\createAccountError:application\json:createaccount-config-201-application\json-FlowTest" description="Verifying functionality of [post:\createAccount:application\json:createaccount-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="createaccount-main" />
+            <munit:enable-flow-source value="post:\createAccount:application\json:createaccount-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_createaccount_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="1ad68b39-a2df-4a68-8248-68ad2dc17264" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="88cef6fd-2ae0-4d30-97e8-b3796104690d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="68f6b351-44b0-442b-a6f7-5151362badad" >
+				<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/createAccount">
+                <http:body><![CDATA[#[output application/json
+---
+{
+    "accountNum" : "4545454544",
+    "atmPin" : "4444",
+    "ifscCode" : "4321",
+    "mailId" : "lakshman@gmail.com",
+    "contact" : "8623833990"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","branchName":"ICICI","type":"savings","customerName":"singh"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="e159569c-7458-4999-83ca-73b6330e5a0f" >
+						<logger level="INFO" doc:name="Logger" doc:id="fee5b5e2-b36d-4e05-ab17-556059edfe77" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="5aea5379-d224-4805-af29-e33b0cbc6ecb" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    
+    <munit:test name="post:\createAccountResourcesNotFound:application\json:createaccount-config-201-application\json-FlowTest" description="Verifying functionality of [post:\createAccount:application\json:createaccount-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="createaccount-main" />
+            <munit:enable-flow-source value="post:\createAccount:application\json:createaccount-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/post_createaccount_application_json.json')]" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="0c73cd24-7b97-4b42-9aec-6b40eb4dfd88" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="88cef6fd-2ae0-4d30-97e8-b3796104690d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{"message": "inserted successfully"
+&#10;&#10;}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+        </munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="ac546143-cb4a-4066-9005-7f561b5a1a12" >
+				<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/createAccounts">
+                <http:body><![CDATA[#[output application/json
+---
+{
+    "accountNum" : "4545454548",
+    "atmPin" : "4444",
+    "ifscCode" : "4321",
+    "mailId" : "lakshman@gmail.com",
+    "contact" : "8623833990"
+
+}]]]></http:body>
+				<http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
+                <http:query-params><![CDATA[#[{"bank":"ICICI","branchName":"ICICI","type":"savings","customerName":"Renuka"}]]]></http:query-params>
+            </http:request>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3324dae9-dcb7-4ab5-ad78-5dabb750863f" >
+						<logger level="INFO" doc:name="Logger" doc:id="16711a7a-9af5-4c9c-9d92-5fdcf61dfc80" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+        </munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="265a76dc-e595-4912-9ebb-c4bf8aae56ea" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+        </munit:validation>
+    </munit:test>
+    
+    
+    <munit:test name="createAccount-UNSUPPORTED_MEDIA_TYPE-apikit-testTest1" doc:id="4bcdadd6-a04c-4cab-a5a9-3fc0506a2a78" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="67db6ac9-da08-445d-bf59-3f48afc7c232" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="createaccount-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:UNSUPPORTED_MEDIA_TYPE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="6a990172-2fee-49d9-ac17-4e530dcdea46" >
+				<flow-ref doc:name="Flow Reference" doc:id="2811a01c-68bc-4365-a1d3-f1f6935c4c2c" name="createaccount-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="cf6be446-08c5-40b8-a931-e0e02b05f0ea" >
+						<logger level="INFO" doc:name="Logger" doc:id="04e18249-0aed-439b-9936-8fb2846057c7" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="bac1e9bc-35eb-4c9d-988f-555790f8e15b" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="withdraw-NOT_ACCEPTABLE-apikit-testTest" doc:id="8df90beb-8994-435b-bef6-1136fb1d52be" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="e1592319-51b3-4c29-9fe1-456a0d677602" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="createaccount-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="1aac4bc9-d065-453f-9d37-a9c33bb7c12c" >
+				<flow-ref doc:name="Flow Reference" doc:id="5e51996d-24d3-45ba-8c3d-ad48b129e5e7" name="createaccount-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3e50b5d8-9e20-4a99-b09d-7ce3908223bc" >
+						<logger level="INFO" doc:name="Logger" doc:id="3a39cdad-ca78-45c6-9fb7-7449de2a6564" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="61ca2145-c703-4da5-bc3a-69c371efd92f" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="createAccount-APIKIT:NOT_IMPLEMENTED-apikit-testTest" doc:id="884b37b9-d112-4006-aae0-2e0b5296eeb1" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="d77c46f6-ce74-4105-b0f4-3ca4547c3808" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="createaccount-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="422d7fd6-5328-419c-a439-5d0e5ebe41d9" >
+				<flow-ref doc:name="Flow Reference" doc:id="baeb6a70-88e2-4e5a-bd34-65f2ecbee320" name="createaccount-main"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="aeb0d697-ff74-4b6c-b767-198a827a5bc5" >
+						<logger level="INFO" doc:name="Logger" doc:id="a62b8107-ce8c-4171-9ed5-5760da0c2134" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="ac3a202e-dd0a-4cf8-947f-4a239326c383" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="createAccount-ConsoleNOT_FOUND-apikit-testTest" doc:id="b068768d-5cc2-4710-beae-22f1f6f453d6" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f52d652a-8504-478b-a05f-7310d1908c4f" processor="apikit:console">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="createaccount-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="64a7b5a7-32aa-470b-9e48-29c657939029" >
+				<flow-ref doc:name="Flow Reference" doc:id="cd0ee299-8ae4-4829-91c4-467664588d67" name="createaccount-console"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5045c2a0-c8a5-49de-8b8c-a142680310e9" >
+						<logger level="INFO" doc:name="Logger" doc:id="22bca902-78b2-49fa-9e8b-b183948258f5" message='#["fail"]'/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="32e84120-92d1-40df-a68d-ab05d15c94a6" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+    
+    
+</mule>
